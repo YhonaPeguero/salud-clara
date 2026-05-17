@@ -5,21 +5,21 @@ import './globals.css'
 const geist = Geist({ subsets: ['latin'], variable: '--font-geist-sans' })
 
 export const metadata: Metadata = {
-  title: 'Salud Transparente Chile — ¿Llegó la plata a tu hospital?',
+  title: 'Salud Transparente — Consulta el presupuesto de tu red de salud',
   description:
-    'Conecta el presupuesto público de salud (DIPRES) con las listas de espera de tu hospital (MINSAL). Datos públicos, en lenguaje humano.',
-  keywords: ['salud', 'presupuesto', 'lista de espera', 'chile', 'transparencia', 'DIPRES', 'MINSAL'],
+    'Datos publicos de DIPRES y MINSAL traducidos a lenguaje humano. Descubre cuanto recibio tu hospital y como va la lista de espera.',
+  keywords: ['salud', 'presupuesto', 'lista de espera', 'chile', 'transparencia', 'DIPRES', 'MINSAL', 'hackathon'],
   openGraph: {
-    title: 'Salud Transparente Chile',
-    description: '¿Cuánto presupuesto recibió la red de salud de tu hospital? ¿Cómo evolucionó la lista de espera?',
+    title: 'Salud Transparente',
+    description: 'Consulta el presupuesto de tu red de salud. Datos publicos, lenguaje humano.',
     type: 'website',
   },
 }
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="es" className={`${geist.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col">{children}</body>
+    <html lang="es" className={`${geist.variable} h-full antialiased bg-[#FAFBFC]`}>
+      <body className="min-h-full flex flex-col bg-[var(--color-background)]">{children}</body>
     </html>
   )
 }
