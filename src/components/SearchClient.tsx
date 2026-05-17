@@ -1,191 +1,164 @@
 'use client'
 
-import { useState, useRef, useCallback, useEffect } from 'react'
+import { useState, useRef, useCallback } from 'react'
 import type { SearchResult } from '@/lib/types'
 import { formatMillones, formatNumero, formatVariacion } from '@/lib/format'
-import { ChatAssistant } from './ChatAssistant'
+import { AgentPanel } from './AgentPanel'
 
 interface Props {
   initialHeroes: SearchResult[]
 }
 
 // ============================================
-// UNIQUE VISUAL COMPONENTS
+// MASCOT ICON (sobria, basada en escudo+latido)
 // ============================================
 
-function LiveIndicator() {
+function MascotIcon({ className = "w-6 h-6" }: { className?: string }) {
   return (
-    <span className="inline-flex items-center gap-2">
-      <span className="relative flex h-2 w-2">
-        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--color-success)] opacity-75" />
-        <span className="relative inline-flex rounded-full h-2 w-2 bg-[var(--color-success)]" />
-      </span>
-      <span className="text-xs font-medium text-[var(--color-success)]">Datos en vivo</span>
-    </span>
+    <svg viewBox="0 0 32 32" className={className} fill="none">
+      {/* Shield base */}
+      <path 
+        d="M16 2L4 6v9c0 7.5 5 13 12 16 7-3 12-8.5 12-16V6L16 2z" 
+        fill="var(--color-primary)"
+        fillOpacity="0.12"
+      />
+      <path 
+        d="M16 2L4 6v9c0 7.5 5 13 12 16 7-3 12-8.5 12-16V6L16 2z" 
+        stroke="var(--color-primary)"
+        strokeWidth="1.5"
+        fill="none"
+      />
+      {/* Heartbeat line */}
+      <path 
+        d="M7 15h4l2-4 3 8 2-4h5" 
+        stroke="var(--color-primary)"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        fill="none"
+      />
+    </svg>
   )
 }
 
-function DataSourceBadge({ source, variant }: { source: string; variant: 'dipres' | 'minsal' }) {
+// ============================================
+// DATA SOURCE BADGE
+// ============================================
+
+function DataSourceBadge({ source, variant, detail }: { source: string; variant: 'dipres' | 'minsal'; detail?: string }) {
   const colors = {
-    dipres: 'bg-[var(--color-primary)]/10 text-[var(--color-primary)] border-[var(--color-primary)]/20',
-    minsal: 'bg-[var(--color-accent)]/10 text-[var(--color-accent)] border-[var(--color-accent)]/20'
+    dipres: 'text-[var(--color-primary)]',
+    minsal: 'text-[var(--color-accent)]'
   }
   
   return (
-    <span className={`inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full border ${colors[variant]}`}>
-      <span className={`w-1.5 h-1.5 rounded-full ${variant === 'dipres' ? 'bg-[var(--color-primary)]' : 'bg-[var(--color-accent)]'}`} />
-      {source}
-    </span>
-  )
-}
-
-function CircularProgress({ value, size = 80, strokeWidth = 6, color }: { value: number; size?: number; strokeWidth?: number; color: string }) {
-  const radius = (size - strokeWidth) / 2
-  const circumference = radius * 2 * Math.PI
-  const offset = circumference - (Math.min(value, 100) / 100) * circumference
-  
-  return (
-    <div className="relative inline-flex items-center justify-center" style={{ width: size, height: size }}>
-      <svg className="transform -rotate-90" width={size} height={size}>
-        <circle
-          cx={size / 2}
-          cy={size / 2}
-          r={radius}
-          fill="none"
-          stroke="var(--color-muted)"
-          strokeWidth={strokeWidth}
-        />
-        <circle
-          cx={size / 2}
-          cy={size / 2}
-          r={radius}
-          fill="none"
-          stroke={color}
-          strokeWidth={strokeWidth}
-          strokeDasharray={circumference}
-          strokeDashoffset={offset}
-          strokeLinecap="round"
-          className="transition-all duration-1000 ease-out"
-        />
-      </svg>
-      <div className="absolute inset-0 flex items-center justify-center">
-        <span className="text-lg font-bold text-[var(--color-foreground)]">{value.toFixed(0)}%</span>
-      </div>
+    <div className="flex items-center gap-2">
+      <span className={`inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wide ${colors[variant]}`}>
+        <span className={`w-1.5 h-1.5 rounded-full ${variant === 'dipres' ? 'bg-[var(--color-primary)]' : 'bg-[var(--color-accent)]'}`} />
+        {source}
+      </span>
+      {detail && (
+        <span className="text-[10px] text-[var(--color-muted-foreground)]">{detail}</span>
+      )}
     </div>
   )
 }
 
-function MetricCard({ label, value, subvalue, trend, icon }: { label: string; value: string; subvalue?: string; trend?: { value: number; positive: boolean }; icon: React.ReactNode }) {
-  return (
-    <div className="group relative bg-[var(--color-card)] rounded-2xl p-5 border border-[var(--color-border)] hover:border-[var(--color-primary)]/30 transition-all duration-300 hover:shadow-lg hover:shadow-[var(--color-primary)]/5">
-      <div className="flex items-start justify-between mb-3">
-        <div className="p-2.5 rounded-xl bg-[var(--color-muted)] group-hover:bg-[var(--color-primary)]/10 transition-colors">
-          {icon}
-        </div>
-        {trend && (
-          <div className={`flex items-center gap-1 text-xs font-semibold ${trend.positive ? 'text-[var(--color-danger)]' : 'text-[var(--color-success)]'}`}>
-            <svg className={`w-3 h-3 ${trend.positive ? '' : 'rotate-180'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-            </svg>
-            {formatVariacion(Math.abs(trend.value))}
-          </div>
-        )}
-      </div>
-      <p className="text-xs font-medium text-[var(--color-muted-foreground)] uppercase tracking-wide mb-1">{label}</p>
-      <p className="text-2xl font-bold text-[var(--color-foreground)] animate-count-up">{value}</p>
-      {subvalue && <p className="text-xs text-[var(--color-muted-foreground)] mt-1">{subvalue}</p>}
-    </div>
-  )
-}
+// ============================================
+// EXECUTION INDICATOR (porcentaje como hero)
+// ============================================
 
-function BudgetBar({ assigned, executed, percentage }: { assigned: string; executed: string; percentage: number }) {
+function ExecutionIndicator({ percentage, assigned, executed }: { percentage: number; assigned: string; executed: string }) {
   const getColor = (pct: number) => {
     if (pct >= 90) return 'var(--color-success)'
     if (pct >= 70) return 'var(--color-warning)'
     return 'var(--color-danger)'
   }
   
-  return (
-    <div className="space-y-4">
-      <div className="flex items-end justify-between">
-        <div>
-          <p className="text-xs font-medium text-[var(--color-muted-foreground)] uppercase tracking-wide">Presupuesto Asignado</p>
-          <p className="text-3xl font-bold text-[var(--color-foreground)] mt-1">{assigned}</p>
-        </div>
-        <div className="text-right">
-          <p className="text-xs font-medium text-[var(--color-muted-foreground)] uppercase tracking-wide">Ejecutado</p>
-          <p className="text-3xl font-bold" style={{ color: getColor(percentage) }}>{executed}</p>
-        </div>
-      </div>
-      
-      <div className="relative">
-        <div className="h-3 bg-[var(--color-muted)] rounded-full overflow-hidden">
-          <div
-            className="h-full rounded-full transition-all duration-1000 ease-out relative overflow-hidden"
-            style={{ width: `${Math.min(percentage, 100)}%`, backgroundColor: getColor(percentage) }}
-          >
-            <div className="absolute inset-0 animate-shimmer" />
-          </div>
-        </div>
-        <div 
-          className="absolute -top-1 w-0.5 h-5 bg-[var(--color-foreground)]/30"
-          style={{ left: '100%', transform: 'translateX(-1px)' }}
-        />
-      </div>
-      
-      <div className="flex items-center justify-between text-xs">
-        <span className="text-[var(--color-muted-foreground)]">0%</span>
-        <span className="font-semibold px-2 py-0.5 rounded-full" style={{ backgroundColor: `${getColor(percentage)}20`, color: getColor(percentage) }}>
-          {percentage.toFixed(1)}% ejecutado
-        </span>
-        <span className="text-[var(--color-muted-foreground)]">100%</span>
-      </div>
-    </div>
-  )
-}
-
-function WaitlistMeter({ count, label, trend }: { count: number; label: string; trend: number | null }) {
-  const maxCount = 10000
-  const percentage = Math.min((count / maxCount) * 100, 100)
+  const color = getColor(percentage)
+  
+  const getHumanPhrase = (pct: number) => {
+    if (pct >= 95) return 'Se gasto casi todo lo asignado este ano'
+    if (pct >= 85) return 'Se ha ejecutado la mayor parte del presupuesto'
+    if (pct >= 70) return 'Ejecucion moderada del presupuesto'
+    if (pct >= 50) return 'Menos de la mitad ejecutado'
+    return 'Baja ejecucion presupuestaria'
+  }
   
   return (
-    <div className="relative">
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-xs font-medium text-[var(--color-muted-foreground)] uppercase tracking-wide">{label}</span>
-        {trend !== null && (
-          <span className={`text-xs font-semibold ${trend >= 0 ? 'text-[var(--color-danger)]' : 'text-[var(--color-success)]'}`}>
-            {trend >= 0 ? '+' : ''}{formatVariacion(trend)} vs. anterior
-          </span>
-        )}
-      </div>
-      <div className="flex items-end gap-3">
-        <div className="text-4xl font-bold text-[var(--color-foreground)]">
-          {formatNumero(count)}
+    <div className="space-y-4">
+      {/* Hero: Percentage */}
+      <div>
+        <div className="flex items-baseline gap-2">
+          <span className="text-4xl font-bold" style={{ color }}>{percentage.toFixed(1)}%</span>
+          <span className="text-sm text-[var(--color-muted-foreground)]">del presupuesto ejecutado</span>
         </div>
-        <div className="text-sm text-[var(--color-muted-foreground)] pb-1">personas</div>
+        <p className="text-sm text-[var(--color-card-foreground)] mt-1">{getHumanPhrase(percentage)}</p>
       </div>
-      <div className="mt-3 flex gap-0.5">
-        {Array.from({ length: 20 }).map((_, i) => (
-          <div
-            key={i}
-            className={`h-8 flex-1 rounded-sm transition-all duration-300 ${
-              i < Math.floor(percentage / 5) 
-                ? 'bg-[var(--color-accent)]' 
-                : 'bg-[var(--color-muted)]'
-            }`}
-            style={{ 
-              opacity: i < Math.floor(percentage / 5) ? 1 - (i * 0.03) : 0.5,
-              transitionDelay: `${i * 30}ms`
-            }}
-          />
-        ))}
+      
+      {/* Progress bar - clean */}
+      <div className="relative h-2.5 bg-[var(--color-muted)] rounded-full overflow-hidden">
+        <div
+          className="h-full rounded-full transition-all duration-700 ease-out"
+          style={{ width: `${Math.min(percentage, 100)}%`, backgroundColor: color }}
+        />
+        {/* Percentage label on bar */}
+        <div 
+          className="absolute top-1/2 -translate-y-1/2 text-[9px] font-bold text-white px-1.5 py-0.5 rounded"
+          style={{ 
+            left: `${Math.min(Math.max(percentage, 8), 92)}%`, 
+            transform: 'translate(-50%, -50%)',
+            backgroundColor: color
+          }}
+        >
+          {percentage.toFixed(0)}%
+        </div>
+      </div>
+      
+      {/* Secondary: Amounts */}
+      <div className="flex items-center gap-6 pt-1">
+        <div>
+          <p className="text-[10px] font-medium text-[var(--color-muted-foreground)] uppercase tracking-wide">Asignado</p>
+          <p className="text-lg font-semibold text-[var(--color-foreground)]">{assigned}</p>
+        </div>
+        <div className="w-px h-8 bg-[var(--color-border)]" />
+        <div>
+          <p className="text-[10px] font-medium text-[var(--color-muted-foreground)] uppercase tracking-wide">Ejecutado</p>
+          <p className="text-lg font-semibold" style={{ color }}>{executed}</p>
+        </div>
       </div>
     </div>
   )
 }
 
 // ============================================
-// RESULT CARD
+// WAITLIST INDICATOR (compacto)
+// ============================================
+
+function WaitlistIndicator({ count, label, trend }: { count: number; label: string; trend: number | null }) {
+  return (
+    <div className="flex items-center justify-between py-3 border-b border-[var(--color-border)] last:border-b-0">
+      <div>
+        <p className="text-[10px] font-medium text-[var(--color-muted-foreground)] uppercase tracking-wide">{label}</p>
+        <div className="flex items-baseline gap-2 mt-0.5">
+          <span className="text-2xl font-bold text-[var(--color-foreground)]">{formatNumero(count)}</span>
+          <span className="text-xs text-[var(--color-muted-foreground)]">personas</span>
+        </div>
+      </div>
+      {trend !== null && (
+        <div className={`flex items-center gap-1 text-xs font-semibold ${trend >= 0 ? 'text-[var(--color-danger)]' : 'text-[var(--color-success)]'}`}>
+          <svg className={`w-3 h-3 ${trend >= 0 ? '' : 'rotate-180'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 15l7-7 7 7" />
+          </svg>
+          {formatVariacion(Math.abs(trend))} vs anterior
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ============================================
+// RESULT CARD (rediseñada)
 // ============================================
 
 function ResultCard({ result }: { result: SearchResult }) {
@@ -194,132 +167,96 @@ function ResultCard({ result }: { result: SearchResult }) {
   const hospitalNombre = minsal?.nombre ?? entry.display_nombre
 
   return (
-    <article className="animate-fade-up bg-[var(--color-card)] rounded-3xl shadow-xl shadow-[var(--color-foreground)]/5 overflow-hidden border border-[var(--color-border)]">
+    <article className="animate-fade-up bg-[var(--color-card)] rounded-2xl shadow-lg shadow-black/5 overflow-hidden border border-[var(--color-border)]">
       {/* Header */}
-      <header className="relative bg-[var(--color-surface-dark)] px-6 py-6 overflow-hidden noise-overlay">
-        <div className="relative z-10 flex items-start justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-3 mb-2">
-              <span className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[var(--color-primary-muted)]">
-                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                </svg>
-                {esComuna ? 'Comuna' : 'Hospital'}
-              </span>
-              <LiveIndicator />
-            </div>
-            <h2 className="text-white text-xl font-bold leading-tight">{hospitalNombre}</h2>
-            <p className="text-white/60 text-sm mt-1 flex items-center gap-1.5">
-              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-              {entry.region}
-            </p>
-          </div>
-          {entry.es_hero && (
-            <span className="shrink-0 bg-[var(--color-primary)] text-white text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full">
-              Verificado
-            </span>
-          )}
+      <header className="relative bg-[var(--color-surface-dark)] px-5 py-5 overflow-hidden">
+        <div className="relative z-10">
+          <span className="inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wide text-[var(--color-primary-muted)] mb-1.5">
+            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+            </svg>
+            {esComuna ? 'Comuna' : 'Hospital'}
+          </span>
+          <h2 className="text-white text-lg font-bold leading-tight">{hospitalNombre}</h2>
+          <p className="text-white/50 text-xs mt-1 flex items-center gap-1">
+            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+            </svg>
+            {entry.region}
+          </p>
         </div>
-        
-        {/* Decorative elements */}
-        <div className="absolute top-0 right-0 w-64 h-64 bg-[var(--color-primary)]/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-        <div className="absolute bottom-0 left-0 w-32 h-32 bg-[var(--color-accent)]/10 rounded-full blur-2xl translate-y-1/2 -translate-x-1/2" />
+        <div className="absolute top-0 right-0 w-48 h-48 bg-[var(--color-primary)]/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
       </header>
 
-      {/* Budget Section */}
-      <section className="px-6 py-6 border-b border-[var(--color-border)]">
-        <div className="flex items-center justify-between mb-5">
-          <DataSourceBadge source="DIPRES" variant="dipres" />
-          <span className="text-[10px] text-[var(--color-muted-foreground)]">Actualizado: {dipres.mes_corte}</span>
-        </div>
-        
-        <p className="text-sm text-[var(--color-muted-foreground)] mb-5 font-medium">
-          Red de Salud: {dipres.nombre}
-        </p>
-        
-        <BudgetBar 
-          assigned={formatMillones(dipres.presupuesto_vigente_MM)}
-          executed={formatMillones(dipres.devengado_MM)}
-          percentage={dipres.pct_ejecucion}
-        />
-      </section>
+      {/* Two-column insight: Budget + Waitlist side by side */}
+      <div className="grid md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-[var(--color-border)]">
+        {/* Budget Section */}
+        <section className="px-5 py-5">
+          <div className="flex items-center justify-between mb-4">
+            <DataSourceBadge source="DIPRES" variant="dipres" detail={dipres.mes_corte} />
+          </div>
+          <p className="text-xs text-[var(--color-muted-foreground)] mb-4">
+            Red regional: <span className="font-medium text-[var(--color-card-foreground)]">{dipres.nombre}</span>
+          </p>
+          <ExecutionIndicator 
+            percentage={dipres.pct_ejecucion}
+            assigned={formatMillones(dipres.presupuesto_vigente_MM)}
+            executed={formatMillones(dipres.devengado_MM)}
+          />
+        </section>
 
-      {/* Waitlist Section */}
-      <section className="px-6 py-6 border-b border-[var(--color-border)]">
-        <div className="flex items-center justify-between mb-5">
-          <DataSourceBadge source="MINSAL" variant="minsal" />
-          {minsal && (
-            <span className="text-[10px] text-[var(--color-muted-foreground)]">Actualizado: {minsal.fecha_corte}</span>
+        {/* Waitlist Section */}
+        <section className="px-5 py-5">
+          <div className="flex items-center justify-between mb-4">
+            <DataSourceBadge source="MINSAL" variant="minsal" detail={minsal?.fecha_corte} />
+          </div>
+          {minsal ? (
+            <>
+              <p className="text-xs text-[var(--color-muted-foreground)] mb-4">
+                Este hospital: <span className="font-medium text-[var(--color-card-foreground)]">{minsal.nombre}</span>
+              </p>
+              <div>
+                <WaitlistIndicator 
+                  count={minsal.espera_cirugia} 
+                  label="Esperando Cirugia"
+                  trend={minsal.variacion_cirugia_pct}
+                />
+                <WaitlistIndicator 
+                  count={minsal.espera_consulta_especialidad} 
+                  label="Esperando Especialidad"
+                  trend={minsal.variacion_consulta_pct}
+                />
+              </div>
+            </>
+          ) : (
+            <div className="flex flex-col items-center justify-center h-full py-8 text-center">
+              <svg className="w-8 h-8 text-[var(--color-muted-foreground)] mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2z" />
+              </svg>
+              <p className="text-xs text-[var(--color-muted-foreground)]">
+                Sin datos de lista de espera
+              </p>
+            </div>
           )}
-        </div>
-        
-        {minsal ? (
-          <div className="space-y-6">
-            <WaitlistMeter 
-              count={minsal.espera_cirugia} 
-              label="Esperando Cirugia"
-              trend={minsal.variacion_cirugia_pct}
-            />
-            <WaitlistMeter 
-              count={minsal.espera_consulta_especialidad} 
-              label="Esperando Especialidad"
-              trend={minsal.variacion_consulta_pct}
-            />
-          </div>
-        ) : (
-          <div className="bg-[var(--color-muted)] rounded-2xl p-5 text-center">
-            <svg className="w-10 h-10 mx-auto text-[var(--color-muted-foreground)] mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2z" />
-            </svg>
-            <p className="text-sm text-[var(--color-muted-foreground)]">
-              No hay datos de lista de espera disponibles para este establecimiento.
-            </p>
-          </div>
-        )}
-      </section>
+        </section>
+      </div>
 
       {/* Insight Section */}
-      <section className="px-6 py-5 bg-[var(--color-muted)]/50">
+      <section className="px-5 py-4 bg-[var(--color-muted)]/30 border-t border-[var(--color-border)]">
         <div className="flex items-start gap-3">
-          <div className="shrink-0 p-2 rounded-xl bg-[var(--color-primary)]/10">
-            <svg className="w-4 h-4 text-[var(--color-primary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-            </svg>
-          </div>
+          <MascotIcon className="w-5 h-5 shrink-0 mt-0.5" />
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-primary)] mb-1">En palabras simples</p>
+            <p className="text-[10px] font-semibold uppercase tracking-wide text-[var(--color-primary)] mb-0.5">En palabras simples</p>
             <p className="text-sm text-[var(--color-card-foreground)] leading-relaxed">{result.parrafo}</p>
           </div>
         </div>
       </section>
-
-      {/* Footer */}
-      <footer className="px-6 py-4 bg-[var(--color-card)] border-t border-[var(--color-border)]">
-        <div className="flex flex-wrap items-center justify-center gap-4 text-[10px] text-[var(--color-muted-foreground)]">
-          <a href="https://www.dipres.gob.cl/597/w3-propertyvalue-15131.html" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--color-primary)] transition-colors flex items-center gap-1">
-            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-            </svg>
-            DIPRES
-          </a>
-          <span className="text-[var(--color-border)]">|</span>
-          <a href="https://visortiemposespera.minsal.cl/" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--color-accent)] transition-colors flex items-center gap-1">
-            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-            </svg>
-            MINSAL
-          </a>
-        </div>
-      </footer>
     </article>
   )
 }
 
 // ============================================
-// SEARCH INPUT
+// SEARCH INPUT WITH AGENT BUTTON
 // ============================================
 
 function SearchInput({ 
@@ -328,7 +265,8 @@ function SearchInput({
   onSubmit, 
   onClear, 
   loading, 
-  inputRef 
+  inputRef,
+  onOpenAgent
 }: { 
   query: string
   onChange: (value: string) => void
@@ -336,53 +274,60 @@ function SearchInput({
   onClear: () => void
   loading: boolean
   inputRef: React.RefObject<HTMLInputElement | null>
+  onOpenAgent: () => void
 }) {
   return (
-    <form onSubmit={onSubmit} className="relative">
-      <div className="relative bg-white rounded-xl shadow-lg shadow-black/5 border border-gray-200/80 flex items-center">
-        {/* Search icon */}
-        <div className="pl-4 pr-2 flex-shrink-0">
-          {loading ? (
-            <div className="w-[18px] h-[18px] border-2 border-[var(--color-primary)] border-t-transparent rounded-full animate-spin" />
-          ) : (
-            <svg className="w-[18px] h-[18px] text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-          )}
-        </div>
-        
-        {/* Input */}
-        <input
-          ref={inputRef}
-          type="text"
-          value={query}
-          onChange={e => onChange(e.target.value)}
-          placeholder="Hospital, comuna o ciudad..."
-          className="flex-1 py-3.5 text-sm text-[var(--color-foreground)] bg-transparent focus:outline-none placeholder:text-gray-400"
-          autoComplete="off"
-        />
-        
-        {/* Actions container */}
-        <div className="flex items-center gap-1 pr-2 flex-shrink-0">
-          {query && (
+    <div className="space-y-3">
+      <form onSubmit={onSubmit} className="relative">
+        <div className="relative bg-white rounded-xl shadow-lg shadow-black/5 border border-gray-200/80 flex items-center">
+          <div className="pl-4 pr-2 flex-shrink-0">
+            {loading ? (
+              <div className="w-[18px] h-[18px] border-2 border-[var(--color-primary)] border-t-transparent rounded-full animate-spin" />
+            ) : (
+              <svg className="w-[18px] h-[18px] text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            )}
+          </div>
+          <input
+            ref={inputRef}
+            type="text"
+            value={query}
+            onChange={e => onChange(e.target.value)}
+            placeholder="Hospital, comuna o ciudad..."
+            className="flex-1 py-3.5 text-sm text-[var(--color-foreground)] bg-transparent focus:outline-none placeholder:text-gray-400"
+            autoComplete="off"
+          />
+          <div className="flex items-center gap-1 pr-2 flex-shrink-0">
+            {query && (
+              <button
+                type="button"
+                onClick={onClear}
+                className="text-xs text-gray-400 hover:text-gray-600 px-2.5 py-1.5 rounded-md hover:bg-gray-100 transition-colors"
+              >
+                Limpiar
+              </button>
+            )}
             <button
-              type="button"
-              onClick={onClear}
-              className="text-xs text-gray-400 hover:text-gray-600 px-2.5 py-1.5 rounded-md hover:bg-gray-100 transition-colors"
+              type="submit"
+              disabled={loading || !query.trim()}
+              className="bg-[var(--color-primary)] hover:bg-[var(--color-primary-muted)] disabled:opacity-40 text-white text-xs font-medium px-4 py-2 rounded-lg transition-all duration-200 disabled:cursor-not-allowed"
             >
-              Limpiar
+              Buscar
             </button>
-          )}
-          <button
-            type="submit"
-            disabled={loading || !query.trim()}
-            className="bg-[var(--color-primary)] hover:bg-[var(--color-primary-muted)] disabled:opacity-40 text-white text-xs font-medium px-4 py-2 rounded-lg transition-all duration-200 disabled:cursor-not-allowed"
-          >
-            Buscar
-          </button>
+          </div>
         </div>
-      </div>
-    </form>
+      </form>
+      
+      {/* Agent button - integrated */}
+      <button
+        onClick={onOpenAgent}
+        className="w-full flex items-center justify-center gap-2 py-2.5 text-sm text-white/70 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 rounded-lg transition-all duration-200"
+      >
+        <MascotIcon className="w-4 h-4" />
+        <span>Preguntar a los datos</span>
+      </button>
+    </div>
   )
 }
 
@@ -446,6 +391,7 @@ export function SearchClient({ initialHeroes }: Props) {
   const [loading, setLoading] = useState(false)
   const [searched, setSearched] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [agentOpen, setAgentOpen] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -510,7 +456,6 @@ export function SearchClient({ initialHeroes }: Props) {
     <div className="min-h-screen bg-[var(--color-background)]">
       {/* Hero Section */}
       <header className="relative bg-[var(--color-surface-dark)] overflow-hidden">
-        {/* Background decoration */}
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute -top-24 -left-24 w-72 h-72 bg-[var(--color-primary)]/15 rounded-full blur-3xl" />
           <div className="absolute -bottom-16 -right-16 w-56 h-56 bg-[var(--color-accent)]/10 rounded-full blur-3xl" />
@@ -520,38 +465,19 @@ export function SearchClient({ initialHeroes }: Props) {
           {/* Top nav with logo */}
           <nav className="flex items-center justify-between mb-10">
             <div className="flex items-center gap-2.5">
-              {/* Custom Logo - Pulse/Heart + Shield */}
-              <div className="relative w-9 h-9">
-                <svg viewBox="0 0 36 36" className="w-full h-full" fill="none">
-                  {/* Shield outline */}
-                  <path 
-                    d="M18 3L4 8v10c0 8.5 6 15 14 18 8-3 14-9.5 14-18V8L18 3z" 
-                    fill="var(--color-primary)"
-                    fillOpacity="0.15"
-                  />
-                  <path 
-                    d="M18 3L4 8v10c0 8.5 6 15 14 18 8-3 14-9.5 14-18V8L18 3z" 
-                    stroke="var(--color-primary)"
-                    strokeWidth="1.5"
-                    fill="none"
-                  />
-                  {/* Heartbeat line */}
-                  <path 
-                    d="M8 18h5l2-4 3 8 2-4h6" 
-                    stroke="var(--color-primary)"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    fill="none"
-                  />
-                </svg>
-              </div>
+              <MascotIcon className="w-8 h-8" />
               <span className="text-base font-semibold text-white">Salud Transparente</span>
             </div>
-            <LiveIndicator />
+            <span className="inline-flex items-center gap-2">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--color-success)] opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-[var(--color-success)]" />
+              </span>
+              <span className="text-xs font-medium text-[var(--color-success)]">Datos en vivo</span>
+            </span>
           </nav>
           
-          {/* Headline - more compact */}
+          {/* Headline */}
           <div className="text-center mb-8">
             <h1 className="text-2xl sm:text-3xl font-bold text-white leading-tight mb-3 text-balance">
               Presupuesto y lista de espera de tu hospital
@@ -561,7 +487,7 @@ export function SearchClient({ initialHeroes }: Props) {
             </p>
           </div>
           
-          {/* Search */}
+          {/* Search with Agent button */}
           <SearchInput
             query={query}
             onChange={handleQueryChange}
@@ -569,6 +495,7 @@ export function SearchClient({ initialHeroes }: Props) {
             onClear={handleClear}
             loading={loading}
             inputRef={inputRef}
+            onOpenAgent={() => setAgentOpen(true)}
           />
           
           <QuickSearchTags onSelect={handleHeroClick} />
@@ -576,7 +503,6 @@ export function SearchClient({ initialHeroes }: Props) {
           <StatsBar />
         </div>
         
-        {/* Bottom fade */}
         <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-[var(--color-background)] to-transparent" />
       </header>
 
@@ -633,7 +559,7 @@ export function SearchClient({ initialHeroes }: Props) {
 
         {/* Results List */}
         {!loading && results.length > 0 && (
-          <div className="space-y-8">
+          <div className="space-y-6">
             {results.length > 1 && (
               <p className="text-sm text-[var(--color-muted-foreground)]">
                 {results.length} resultados para <span className="font-semibold text-[var(--color-foreground)]">&quot;{query}&quot;</span>
@@ -648,14 +574,14 @@ export function SearchClient({ initialHeroes }: Props) {
         {/* Hero Demos */}
         {showHeroes && (
           <div>
-            <div className="flex items-center gap-4 mb-8">
+            <div className="flex items-center gap-4 mb-6">
               <div className="h-px flex-1 bg-[var(--color-border)]" />
-              <p className="text-xs font-bold uppercase tracking-widest text-[var(--color-muted-foreground)]">
-                Ejemplos Verificados
+              <p className="text-xs font-semibold uppercase tracking-wide text-[var(--color-muted-foreground)]">
+                Ejemplos
               </p>
               <div className="h-px flex-1 bg-[var(--color-border)]" />
             </div>
-            <div className="space-y-8">
+            <div className="space-y-6">
               {initialHeroes.map(r => (
                 <ResultCard key={r.entry.id} result={r} />
               ))}
@@ -667,10 +593,7 @@ export function SearchClient({ initialHeroes }: Props) {
         <footer className="mt-16 pt-8 border-t border-[var(--color-border)]">
           <div className="text-center space-y-3">
             <div className="flex items-center justify-center gap-2">
-              <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none">
-                <path d="M12 2L3 6v6c0 5.5 3.8 10.2 9 12 5.2-1.8 9-6.5 9-12V6l-9-4z" fill="var(--color-primary)" fillOpacity="0.15" stroke="var(--color-primary)" strokeWidth="1.2"/>
-                <path d="M5 12h3.5l1.5-3 2 6 1.5-3H17" stroke="var(--color-primary)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
+              <MascotIcon className="w-5 h-5" />
               <span className="text-sm font-medium text-[var(--color-foreground)]">Salud Transparente</span>
             </div>
             <p className="text-[11px] text-[var(--color-muted-foreground)] max-w-sm mx-auto">
@@ -690,8 +613,8 @@ export function SearchClient({ initialHeroes }: Props) {
         </footer>
       </main>
       
-      {/* Chat Assistant */}
-      <ChatAssistant />
+      {/* Agent Panel */}
+      <AgentPanel isOpen={agentOpen} onClose={() => setAgentOpen(false)} />
     </div>
   )
 }
