@@ -3,6 +3,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 import type { SearchResult } from '@/lib/types'
 import { formatMillones, formatNumero, formatVariacion } from '@/lib/format'
+import { ChatAssistant } from './ChatAssistant'
 
 interface Props {
   initialHeroes: SearchResult[]
@@ -688,6 +689,9 @@ export function SearchClient({ initialHeroes }: Props) {
           </div>
         </footer>
       </main>
+      
+      {/* Chat Assistant */}
+      <ChatAssistant />
     </div>
   )
 }
