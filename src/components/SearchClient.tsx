@@ -338,44 +338,48 @@ function SearchInput({
 }) {
   return (
     <form onSubmit={onSubmit} className="relative">
-      <div className="relative bg-white/95 rounded-xl shadow-lg shadow-black/5 border border-white/60">
-        <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none">
+      <div className="relative bg-white rounded-xl shadow-lg shadow-black/5 border border-gray-200/80 flex items-center">
+        {/* Search icon */}
+        <div className="pl-4 pr-2 flex-shrink-0">
           {loading ? (
-            <div className="w-4 h-4 border-2 border-[var(--color-primary)] border-t-transparent rounded-full animate-spin" />
+            <div className="w-[18px] h-[18px] border-2 border-[var(--color-primary)] border-t-transparent rounded-full animate-spin" />
           ) : (
-            <svg className="w-4 h-4 text-[var(--color-muted-foreground)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="w-[18px] h-[18px] text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
           )}
         </div>
+        
+        {/* Input */}
         <input
           ref={inputRef}
           type="text"
           value={query}
           onChange={e => onChange(e.target.value)}
           placeholder="Hospital, comuna o ciudad..."
-          className="w-full pl-11 pr-32 py-3.5 text-sm text-[var(--color-foreground)] bg-transparent rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/50 placeholder:text-[var(--color-muted-foreground)]"
+          className="flex-1 py-3.5 text-sm text-[var(--color-foreground)] bg-transparent focus:outline-none placeholder:text-gray-400"
           autoComplete="off"
         />
-        {query && (
+        
+        {/* Actions container */}
+        <div className="flex items-center gap-1 pr-2 flex-shrink-0">
+          {query && (
+            <button
+              type="button"
+              onClick={onClear}
+              className="text-xs text-gray-400 hover:text-gray-600 px-2.5 py-1.5 rounded-md hover:bg-gray-100 transition-colors"
+            >
+              Limpiar
+            </button>
+          )}
           <button
-            type="button"
-            onClick={onClear}
-            className="absolute right-[88px] top-1/2 -translate-y-1/2 text-xs text-[var(--color-muted-foreground)] hover:text-[var(--color-foreground)] px-2 py-1 rounded transition-colors"
+            type="submit"
+            disabled={loading || !query.trim()}
+            className="bg-[var(--color-primary)] hover:bg-[var(--color-primary-muted)] disabled:opacity-40 text-white text-xs font-medium px-4 py-2 rounded-lg transition-all duration-200 disabled:cursor-not-allowed"
           >
-            Limpiar
+            Buscar
           </button>
-        )}
-        <button
-          type="submit"
-          disabled={loading || !query.trim()}
-          className="absolute right-2 top-1/2 -translate-y-1/2 bg-[var(--color-primary)] hover:bg-[var(--color-primary-muted)] disabled:opacity-40 text-white text-xs font-medium px-4 py-2 rounded-lg transition-all duration-200 disabled:cursor-not-allowed flex items-center gap-1.5"
-        >
-          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
-          <span>Buscar</span>
-        </button>
+        </div>
       </div>
     </form>
   )
