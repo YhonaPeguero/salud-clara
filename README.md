@@ -211,5 +211,5 @@ MIT License — libre para usar, modificar y distribuir.
 
 ---
 
-*Proyecto desarrollado para hackathon hack@latam 2025 — Track Transparency & Corruption*
+*Proyecto desarrollado para hackathon hack@latam 2026 — Track Transparency & Corruption*
 *Datos públicos de DIPRES y MINSAL Chile*
