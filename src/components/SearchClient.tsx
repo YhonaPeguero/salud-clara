@@ -768,18 +768,12 @@ export function SearchClient({ initialHeroes, dipresPeriodo, minsalPeriodo, stat
               <KmillaWordmark size="footer" tone="dark" />
             </div>
             <p className="text-[11px] text-[var(--color-muted-foreground)] max-w-md mx-auto leading-relaxed">
-              Cada cifra está trazada a su fuente oficial en{' '}
-              <a href="https://github.com/YhonaPeguero/salud-clara/blob/main/data/_data_audit.md" target="_blank" rel="noopener noreferrer" className="underline hover:text-[var(--color-foreground)]">
-                data/_data_audit.md
-              </a>
-              . El presupuesto y la lista de espera corresponden al Servicio de Salud regional, no al hospital individual.
+              Datos oficiales publicados por DIPRES y MINSAL. El presupuesto y la lista de espera corresponden al Servicio de Salud regional, no al hospital individual.
             </p>
             <div className="flex items-center justify-center gap-3 text-[11px] text-[var(--color-muted-foreground)]">
               <a href="https://www.dipres.gob.cl" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--color-primary)] transition-colors">DIPRES</a>
               <span className="w-1 h-1 rounded-full bg-[var(--color-border)]" />
               <a href="https://www.listaesperasalud.cl" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--color-accent)] transition-colors">MINSAL</a>
-              <span className="w-1 h-1 rounded-full bg-[var(--color-border)]" />
-              <a href="https://github.com/YhonaPeguero/salud-clara" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--color-foreground)] transition-colors">GitHub</a>
             </div>
             <p className="text-[10px] text-[var(--color-muted-foreground)]/60">Hack@LATAM 2026 · Transparency & Corruption</p>
           </div>

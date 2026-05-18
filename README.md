@@ -1,10 +1,10 @@
 # K-milla
 
-> Datos públicos de salud chilena, conectados. Repo: `salud-clara` (histórico). Paquete: `k-milla`.
+> Datos públicos de salud chilena, conectados. Paquete: `k-milla`.
 
 **¿Llegó la plata a tu hospital? ¿Cuántas personas están esperando atención?**
 
-Conecta el presupuesto público de salud (DIPRES) con las listas de espera de tu hospital (MINSAL). Una sola búsqueda. Datos públicos. Lenguaje humano.
+Conecta el presupuesto público de salud (DIPRES) con las listas de espera de tu Servicio de Salud (MINSAL). Una sola búsqueda. Datos públicos. Lenguaje humano.
 
 ---
 
@@ -28,7 +28,7 @@ Banner nacional en el hero: presupuesto vigente total + ejecución agregada + to
 
 ## Principios Innegociables
 
-- **Honestidad de unidad**: DIPRES publica por Servicio de Salud (~29 regionales), MINSAL por establecimiento. Siempre se etiquetan por separado.
+- **Honestidad de unidad**: DIPRES y MINSAL se muestran por Servicio de Salud. El hospital o comuna es solo la puerta de entrada de la búsqueda.
 - **Cero veredictos**: párrafos descriptivos, sin acusaciones.
 - **Sin tiempo real**: datos pre-ingresados, actualizables con scripts.
 - **Primera impresión clara**: una sola caja, cero jerga.
@@ -47,14 +47,14 @@ Banner nacional en el hero: presupuesto vigente total + ejecución agregada + to
 ## Estructura del Repositorio
 
 ```
-salud-clara/
+k-milla/
 ├── data/
 │   ├── mapping.json           ← TABLA MAESTRA: commune/hospital → Servicio de Salud
 │   ├── dipres_ejecucion.json  ← Presupuesto por Servicio de Salud (DIPRES)
-│   └── minsal_espera.json     ← Lista de espera por establecimiento (MINSAL)
+│   └── minsal_espera.json     ← Lista de espera por Servicio de Salud (MINSAL)
 ├── scripts/
-│   ├── ingest_dipres.py       ← Actualiza datos DIPRES desde Excel oficial
-│   └── ingest_minsal.py       ← Actualiza datos MINSAL desde CSV Visor
+│   ├── ingest_dipres.mjs      ← Actualiza datos DIPRES desde XML oficial
+│   └── ingest_minsal.mjs      ← Actualiza datos MINSAL desde JSON oficial
 ├── src/
 │   ├── app/
 │   │   ├── api/search/        ← API de búsqueda
@@ -79,7 +79,7 @@ La tabla de mapeo es el corazón del proyecto. Conecta:
 
 ```
 nombre de hospital / comuna → Servicio de Salud (para datos DIPRES)
-nombre de hospital          → ID establecimiento (para datos MINSAL)
+nombre de hospital          → Servicio de Salud (para datos MINSAL)
 ```
 
 ### Servicios de Salud incluidos (28 servicios)
@@ -130,16 +130,16 @@ Estas tres búsquedas existen en el mapeo inicial y sirven para probar la experi
 ## Fuentes de Datos
 
 ### DIPRES
-- **URL**: https://www.dipres.gob.cl/597/w3-propertyvalue-15131.html
-- **Qué publica**: Ejecución presupuestaria mensual por servicio (Excel)
+- **URL**: https://www.dipres.gob.cl/597/w3-multipropertyvalues-15149-35869.html
+- **Qué publica**: Ejecución presupuestaria por Servicio de Salud (XML/CSV)
 - **Partida**: 16 - Ministerio de Salud
 - **Unidad**: Cada Servicio de Salud como organismo
 - **Frecuencia**: Mensual, con corte a fin de mes
 
 ### MINSAL - Visor Ciudadano
 - **URL**: https://www.listaesperasalud.cl/
-- **Qué publica**: Listas de espera por establecimiento (consultas y cirugías)
-- **Unidad**: Hospital / Establecimiento
+- **Qué publica**: Listas de espera por Servicio de Salud (consultas y cirugías)
+- **Unidad**: Servicio de Salud
 - **Frecuencia**: Mensual
 
 ---
@@ -147,10 +147,6 @@ Estas tres búsquedas existen en el mapeo inicial y sirven para probar la experi
 ## Instalación y Desarrollo
 
 ```bash
-# Clonar el repositorio
-git clone https://github.com/YhonaPeguero/salud-clara.git
-cd salud-clara
-
 # Instalar dependencias
 npm install
 
@@ -206,8 +202,6 @@ git push
 ---
 
 ## Deploy en Vercel
-
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FYhonaPeguero%2Fsalud-clara&env=MINIMAX_API_KEY&envDescription=API+key+para+el+asistente+conversacional+(opcional+pero+recomendada))
 
 El proyecto incluye `vercel.json` mínimo. Pasos manuales:
 
