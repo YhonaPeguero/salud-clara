@@ -1,9 +1,28 @@
-export function formatMillones(mm: number): string {
+export function formatMillones(mm: number | null | undefined): string {
+  if (mm === null || mm === undefined) return 'Sin dato'
+  // mm está en MILLONES de pesos. 1 billón (CLP, escala larga) = 1.000.000 millones.
+  if (mm >= 1_000_000) {
+    const bill = mm / 1_000_000
+    return `$${bill.toLocaleString('es-CL', { minimumFractionDigits: 1, maximumFractionDigits: 2 })} billones`
+  }
   if (mm >= 1000) {
-    const billones = mm / 1000
-    return `$${billones.toLocaleString('es-CL', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} mil millones`
+    const milMM = mm / 1000
+    return `$${milMM.toLocaleString('es-CL', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} mil millones`
   }
   return `$${mm.toLocaleString('es-CL')} millones`
+}
+
+// Versión ultra-compacta para hero stats / chips, donde el ancho es limitado.
+// Usa abreviaturas: "MM" = millones, "MMM" = miles de millones, "B" = billones.
+export function formatMillonesCompact(mm: number | null | undefined): string {
+  if (mm === null || mm === undefined) return '—'
+  if (mm >= 1_000_000) {
+    return `$${(mm / 1_000_000).toLocaleString('es-CL', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} B`
+  }
+  if (mm >= 1000) {
+    return `$${(mm / 1000).toLocaleString('es-CL', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} MMM`
+  }
+  return `$${mm.toLocaleString('es-CL')} MM`
 }
 
 export function formatVariacion(pct: number | null): string {
@@ -12,7 +31,8 @@ export function formatVariacion(pct: number | null): string {
   return `${signo}${pct.toFixed(1)}%`
 }
 
-export function formatNumero(n: number): string {
+export function formatNumero(n: number | null | undefined): string {
+  if (n === null || n === undefined) return 'Sin dato'
   return n.toLocaleString('es-CL')
 }
 
@@ -21,10 +41,10 @@ export function generarParrafo(params: {
   tipoEntidad: string
   nombreServicio: string
   region: string
-  presupuestoVigenteMMCLP: number
-  devengadoMMCLP: number
-  pctEjecucion: number
-  mesCorte: string
+  presupuestoVigenteMMCLP: number | null
+  devengadoMMCLP: number | null
+  pctEjecucion: number | null
+  mesCorte: string | null
   esperaCirugia: number | null
   esperaConsulta: number | null
   variacionCirugiaPct: number | null
@@ -46,13 +66,14 @@ export function generarParrafo(params: {
     fechaCorteMinsal,
   } = params
 
-  const ppto = formatMillones(presupuestoVigenteMMCLP)
-  const ejecutado = formatMillones(devengadoMMCLP)
+  const hasBudgetData = presupuestoVigenteMMCLP !== null && devengadoMMCLP !== null && pctEjecucion !== null
 
-  let texto = `Con los últimos datos publicados (${mesCorte}), el ${nombreServicio} — la red regional de salud a la que pertenece ${nombreEstablecimiento} — recibió un presupuesto de ${ppto} y ejecutó el ${pctEjecucion.toFixed(1)}% (${ejecutado}).`
+  let texto = hasBudgetData
+    ? `Con los últimos datos publicados (${mesCorte ?? 'sin corte informado'}), el ${nombreServicio} — la red regional de salud a la que pertenece ${nombreEstablecimiento} — recibió un presupuesto de ${formatMillones(presupuestoVigenteMMCLP)} y ejecutó el ${pctEjecucion.toFixed(1)}% (${formatMillones(devengadoMMCLP)}).`
+    : `Para ${nombreServicio} — la red regional de salud a la que pertenece ${nombreEstablecimiento} — no hay datos presupuestarios completos y trazables cargados para el período consultado.`
 
-  if (esperaCirugia !== null && esperaConsulta !== null && fechaCorteMinsal) {
-    texto += ` En ese mismo período, la lista de espera registrada en ${nombreEstablecimiento} fue de ${formatNumero(esperaCirugia)} personas aguardando una cirugía y ${formatNumero(esperaConsulta)} esperando una consulta de especialidad`
+  if ((esperaCirugia !== null || esperaConsulta !== null) && fechaCorteMinsal) {
+    texto += ` Al corte ${fechaCorteMinsal}, la lista de espera de toda la red del ${nombreServicio} (no solo ${nombreEstablecimiento}) era de ${esperaCirugia !== null ? `${formatNumero(esperaCirugia)} personas aguardando una cirugía` : 'cirugía sin dato'} y ${esperaConsulta !== null ? `${formatNumero(esperaConsulta)} esperando una consulta de especialidad` : 'consulta sin dato'}`
 
     const varTexto: string[] = []
     if (variacionCirugiaPct !== null) {
@@ -65,12 +86,12 @@ export function generarParrafo(params: {
     }
 
     if (varTexto.length > 0) {
-      texto += `, lo que representa ${varTexto.join(' y ')} respecto al año anterior`
+      texto += `, lo que representa ${varTexto.join(' y ')} respecto al mismo trimestre del año anterior`
     }
 
     texto += '.'
   } else {
-    texto += ` No se encontraron datos de lista de espera para ${nombreEstablecimiento} en el Visor MINSAL para este período.`
+    texto += ` No hay datos de lista de espera cargados para el ${nombreServicio} en este período.`
   }
 
   return texto

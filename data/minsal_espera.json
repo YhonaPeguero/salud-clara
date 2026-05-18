@@ -1,418 +1,1644 @@
 {
-  "version": "1.0.0",
-  "fecha_corte": "Diciembre 2024",
-  "fuente": "MINSAL - Ministerio de Salud. Visor Ciudadano de Tiempos de Espera.",
-  "url_fuente": "https://visortiemposespera.minsal.cl/",
-  "nota": "Datos pre-ingresados de fuentes públicas MINSAL. Para actualización ejecutar scripts/ingest_minsal.py.",
+  "version": "2.1.0",
+  "fecha_corte": "JUNIO 2025",
+  "fecha_ingesta": "2026-05-18T02:08:03.353Z",
+  "fuente": "MINSAL — Subsecretaría de Redes Asistenciales. Visualizador de Listas de Espera de Salud.",
+  "url_fuente": "https://www.listaesperasalud.cl/",
+  "nota": "Cifras a nivel de Servicio de Salud (unidad oficial de análisis del MINSAL). Variaciones interanuales calculadas contra el mismo trimestre del año anterior. consulta_pacientes/quirurgica_pacientes vienen del JSON oficial por servicio en listaesperasalud.cl. Si la fuente entrega null en algún campo del trimestre comparado, la variación queda en null. historico contiene los últimos 8 trimestres por servicio. El campo establecimientos mantiene el mapeo hospital → servicio_salud_id para la búsqueda; las cifras viven en servicios.",
+  "servicios": {
+    "ss_arica_parinacota": {
+      "nombre_servicio": "Servicio de Salud Arica y Parinacota",
+      "espera_cirugia": 5457,
+      "espera_consulta_especialidad": 35384,
+      "variacion_cirugia_pct": 24.7,
+      "variacion_consulta_pct": null,
+      "fecha_corte": "JUNIO 2025",
+      "historico": [
+        {
+          "trimestre": "SEPTIEMBRE 2023",
+          "espera_cirugia": 3819,
+          "espera_consulta_especialidad": 21304
+        },
+        {
+          "trimestre": "DICIEMBRE 2023",
+          "espera_cirugia": 3862,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "MARZO 2024",
+          "espera_cirugia": 4302,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "JUNIO 2024",
+          "espera_cirugia": 4376,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "SEPTIEMBRE 2024",
+          "espera_cirugia": 4804,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "DICIEMBRE 2024",
+          "espera_cirugia": 5063,
+          "espera_consulta_especialidad": 33354
+        },
+        {
+          "trimestre": "MARZO 2025",
+          "espera_cirugia": 6482,
+          "espera_consulta_especialidad": 38264
+        },
+        {
+          "trimestre": "JUNIO 2025",
+          "espera_cirugia": 5457,
+          "espera_consulta_especialidad": 35384
+        }
+      ],
+      "url_fuente_real": "https://www.listaesperasalud.cl/data/data_SERVICIO_DE_SALUD_ARICA_Y_PARINACOTA.json"
+    },
+    "ss_tarapaca": {
+      "nombre_servicio": "Servicio de Salud Tarapacá",
+      "espera_cirugia": 5799,
+      "espera_consulta_especialidad": 49785,
+      "variacion_cirugia_pct": -0.1,
+      "variacion_consulta_pct": null,
+      "fecha_corte": "JUNIO 2025",
+      "historico": [
+        {
+          "trimestre": "SEPTIEMBRE 2023",
+          "espera_cirugia": 4556,
+          "espera_consulta_especialidad": 38568
+        },
+        {
+          "trimestre": "DICIEMBRE 2023",
+          "espera_cirugia": 5033,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "MARZO 2024",
+          "espera_cirugia": 5529,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "JUNIO 2024",
+          "espera_cirugia": 5805,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "SEPTIEMBRE 2024",
+          "espera_cirugia": 5531,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "DICIEMBRE 2024",
+          "espera_cirugia": 5786,
+          "espera_consulta_especialidad": 47304
+        },
+        {
+          "trimestre": "MARZO 2025",
+          "espera_cirugia": 6008,
+          "espera_consulta_especialidad": 49965
+        },
+        {
+          "trimestre": "JUNIO 2025",
+          "espera_cirugia": 5799,
+          "espera_consulta_especialidad": 49785
+        }
+      ],
+      "url_fuente_real": "https://www.listaesperasalud.cl/data/data_SERVICIO_DE_SALUD_TARAPACA.json"
+    },
+    "ss_antofagasta": {
+      "nombre_servicio": "Servicio de Salud Antofagasta",
+      "espera_cirugia": 6598,
+      "espera_consulta_especialidad": 72818,
+      "variacion_cirugia_pct": -14.23,
+      "variacion_consulta_pct": null,
+      "fecha_corte": "JUNIO 2025",
+      "historico": [
+        {
+          "trimestre": "SEPTIEMBRE 2023",
+          "espera_cirugia": 6755,
+          "espera_consulta_especialidad": 46602
+        },
+        {
+          "trimestre": "DICIEMBRE 2023",
+          "espera_cirugia": 7080,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "MARZO 2024",
+          "espera_cirugia": 7776,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "JUNIO 2024",
+          "espera_cirugia": 7693,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "SEPTIEMBRE 2024",
+          "espera_cirugia": 8911,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "DICIEMBRE 2024",
+          "espera_cirugia": 7860,
+          "espera_consulta_especialidad": 65738
+        },
+        {
+          "trimestre": "MARZO 2025",
+          "espera_cirugia": 7936,
+          "espera_consulta_especialidad": 69267
+        },
+        {
+          "trimestre": "JUNIO 2025",
+          "espera_cirugia": 6598,
+          "espera_consulta_especialidad": 72818
+        }
+      ],
+      "url_fuente_real": "https://www.listaesperasalud.cl/data/data_SERVICIO_DE_SALUD_ANTOFAGASTA.json"
+    },
+    "ss_atacama": {
+      "nombre_servicio": "Servicio de Salud Atacama",
+      "espera_cirugia": 5700,
+      "espera_consulta_especialidad": 35461,
+      "variacion_cirugia_pct": 29.96,
+      "variacion_consulta_pct": null,
+      "fecha_corte": "JUNIO 2025",
+      "historico": [
+        {
+          "trimestre": "SEPTIEMBRE 2023",
+          "espera_cirugia": 4736,
+          "espera_consulta_especialidad": 31477
+        },
+        {
+          "trimestre": "DICIEMBRE 2023",
+          "espera_cirugia": 4731,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "MARZO 2024",
+          "espera_cirugia": 4590,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "JUNIO 2024",
+          "espera_cirugia": 4386,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "SEPTIEMBRE 2024",
+          "espera_cirugia": 4238,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "DICIEMBRE 2024",
+          "espera_cirugia": 4609,
+          "espera_consulta_especialidad": 36827
+        },
+        {
+          "trimestre": "MARZO 2025",
+          "espera_cirugia": 4927,
+          "espera_consulta_especialidad": 39586
+        },
+        {
+          "trimestre": "JUNIO 2025",
+          "espera_cirugia": 5700,
+          "espera_consulta_especialidad": 35461
+        }
+      ],
+      "url_fuente_real": "https://www.listaesperasalud.cl/data/data_SERVICIO_DE_SALUD_ATACAMA.json"
+    },
+    "ss_coquimbo": {
+      "nombre_servicio": "Servicio de Salud Coquimbo",
+      "espera_cirugia": 20304,
+      "espera_consulta_especialidad": 119096,
+      "variacion_cirugia_pct": 40.48,
+      "variacion_consulta_pct": null,
+      "fecha_corte": "JUNIO 2025",
+      "historico": [
+        {
+          "trimestre": "SEPTIEMBRE 2023",
+          "espera_cirugia": 12106,
+          "espera_consulta_especialidad": 94493
+        },
+        {
+          "trimestre": "DICIEMBRE 2023",
+          "espera_cirugia": 13066,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "MARZO 2024",
+          "espera_cirugia": 13870,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "JUNIO 2024",
+          "espera_cirugia": 14453,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "SEPTIEMBRE 2024",
+          "espera_cirugia": 16360,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "DICIEMBRE 2024",
+          "espera_cirugia": 17902,
+          "espera_consulta_especialidad": 106722
+        },
+        {
+          "trimestre": "MARZO 2025",
+          "espera_cirugia": 19614,
+          "espera_consulta_especialidad": 111870
+        },
+        {
+          "trimestre": "JUNIO 2025",
+          "espera_cirugia": 20304,
+          "espera_consulta_especialidad": 119096
+        }
+      ],
+      "url_fuente_real": "https://www.listaesperasalud.cl/data/data_SERVICIO_DE_SALUD_COQUIMBO.json"
+    },
+    "ss_valparaiso_sa": {
+      "nombre_servicio": "Servicio de Salud Valparaíso - San Antonio",
+      "espera_cirugia": 13028,
+      "espera_consulta_especialidad": 56631,
+      "variacion_cirugia_pct": 16.18,
+      "variacion_consulta_pct": null,
+      "fecha_corte": "JUNIO 2025",
+      "historico": [
+        {
+          "trimestre": "SEPTIEMBRE 2023",
+          "espera_cirugia": 8795,
+          "espera_consulta_especialidad": 50993
+        },
+        {
+          "trimestre": "DICIEMBRE 2023",
+          "espera_cirugia": 10198,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "MARZO 2024",
+          "espera_cirugia": 10509,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "JUNIO 2024",
+          "espera_cirugia": 11214,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "SEPTIEMBRE 2024",
+          "espera_cirugia": 10820,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "DICIEMBRE 2024",
+          "espera_cirugia": 11319,
+          "espera_consulta_especialidad": 57919
+        },
+        {
+          "trimestre": "MARZO 2025",
+          "espera_cirugia": 13804,
+          "espera_consulta_especialidad": 55639
+        },
+        {
+          "trimestre": "JUNIO 2025",
+          "espera_cirugia": 13028,
+          "espera_consulta_especialidad": 56631
+        }
+      ],
+      "url_fuente_real": "https://www.listaesperasalud.cl/data/data_SERVICIO_DE_SALUD_VALPARAISO-SAN_ANTONIO.json"
+    },
+    "ss_vina_quillota": {
+      "nombre_servicio": "Servicio de Salud Viña del Mar - Quillota",
+      "espera_cirugia": 15648,
+      "espera_consulta_especialidad": 125522,
+      "variacion_cirugia_pct": 7.96,
+      "variacion_consulta_pct": null,
+      "fecha_corte": "JUNIO 2025",
+      "historico": [
+        {
+          "trimestre": "SEPTIEMBRE 2023",
+          "espera_cirugia": 15455,
+          "espera_consulta_especialidad": 117702
+        },
+        {
+          "trimestre": "DICIEMBRE 2023",
+          "espera_cirugia": 15496,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "MARZO 2024",
+          "espera_cirugia": 15430,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "JUNIO 2024",
+          "espera_cirugia": 14494,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "SEPTIEMBRE 2024",
+          "espera_cirugia": 14654,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "DICIEMBRE 2024",
+          "espera_cirugia": 15764,
+          "espera_consulta_especialidad": 126892
+        },
+        {
+          "trimestre": "MARZO 2025",
+          "espera_cirugia": 16265,
+          "espera_consulta_especialidad": 133592
+        },
+        {
+          "trimestre": "JUNIO 2025",
+          "espera_cirugia": 15648,
+          "espera_consulta_especialidad": 125522
+        }
+      ],
+      "url_fuente_real": "https://www.listaesperasalud.cl/data/data_SERVICIO_DE_SALUD_VINA_DEL_MAR-QUILLOTA.json"
+    },
+    "ss_aconcagua": {
+      "nombre_servicio": "Servicio de Salud Aconcagua",
+      "espera_cirugia": 7473,
+      "espera_consulta_especialidad": 25280,
+      "variacion_cirugia_pct": -4.71,
+      "variacion_consulta_pct": null,
+      "fecha_corte": "JUNIO 2025",
+      "historico": [
+        {
+          "trimestre": "SEPTIEMBRE 2023",
+          "espera_cirugia": 5532,
+          "espera_consulta_especialidad": 26527
+        },
+        {
+          "trimestre": "DICIEMBRE 2023",
+          "espera_cirugia": 6387,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "MARZO 2024",
+          "espera_cirugia": 6332,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "JUNIO 2024",
+          "espera_cirugia": 7842,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "SEPTIEMBRE 2024",
+          "espera_cirugia": 7799,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "DICIEMBRE 2024",
+          "espera_cirugia": 6608,
+          "espera_consulta_especialidad": 23965
+        },
+        {
+          "trimestre": "MARZO 2025",
+          "espera_cirugia": 7329,
+          "espera_consulta_especialidad": 26964
+        },
+        {
+          "trimestre": "JUNIO 2025",
+          "espera_cirugia": 7473,
+          "espera_consulta_especialidad": 25280
+        }
+      ],
+      "url_fuente_real": "https://www.listaesperasalud.cl/data/data_SERVICIO_DE_SALUD_ACONCAGUA.json"
+    },
+    "ss_metro_norte": {
+      "nombre_servicio": "Servicio de Salud Metropolitano Norte",
+      "espera_cirugia": 15634,
+      "espera_consulta_especialidad": 120191,
+      "variacion_cirugia_pct": 6.03,
+      "variacion_consulta_pct": null,
+      "fecha_corte": "JUNIO 2025",
+      "historico": [
+        {
+          "trimestre": "SEPTIEMBRE 2023",
+          "espera_cirugia": 12839,
+          "espera_consulta_especialidad": 116022
+        },
+        {
+          "trimestre": "DICIEMBRE 2023",
+          "espera_cirugia": 13848,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "MARZO 2024",
+          "espera_cirugia": 14967,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "JUNIO 2024",
+          "espera_cirugia": 14745,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "SEPTIEMBRE 2024",
+          "espera_cirugia": 15026,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "DICIEMBRE 2024",
+          "espera_cirugia": 14100,
+          "espera_consulta_especialidad": 114937
+        },
+        {
+          "trimestre": "MARZO 2025",
+          "espera_cirugia": 15709,
+          "espera_consulta_especialidad": 116756
+        },
+        {
+          "trimestre": "JUNIO 2025",
+          "espera_cirugia": 15634,
+          "espera_consulta_especialidad": 120191
+        }
+      ],
+      "url_fuente_real": "https://www.listaesperasalud.cl/data/data_SERVICIO_DE_SALUD_METROPOLITANO_NORTE.json"
+    },
+    "ss_metro_occidente": {
+      "nombre_servicio": "Servicio de Salud Metropolitano Occidente",
+      "espera_cirugia": 14883,
+      "espera_consulta_especialidad": 140707,
+      "variacion_cirugia_pct": 35.46,
+      "variacion_consulta_pct": null,
+      "fecha_corte": "JUNIO 2025",
+      "historico": [
+        {
+          "trimestre": "SEPTIEMBRE 2023",
+          "espera_cirugia": 9952,
+          "espera_consulta_especialidad": 133473
+        },
+        {
+          "trimestre": "DICIEMBRE 2023",
+          "espera_cirugia": 10381,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "MARZO 2024",
+          "espera_cirugia": 11562,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "JUNIO 2024",
+          "espera_cirugia": 10987,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "SEPTIEMBRE 2024",
+          "espera_cirugia": 11746,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "DICIEMBRE 2024",
+          "espera_cirugia": 12379,
+          "espera_consulta_especialidad": 135407
+        },
+        {
+          "trimestre": "MARZO 2025",
+          "espera_cirugia": 15235,
+          "espera_consulta_especialidad": 141293
+        },
+        {
+          "trimestre": "JUNIO 2025",
+          "espera_cirugia": 14883,
+          "espera_consulta_especialidad": 140707
+        }
+      ],
+      "url_fuente_real": "https://www.listaesperasalud.cl/data/data_SERVICIO_DE_SALUD_METROPOLITANO_OCCIDENTE.json"
+    },
+    "ss_metro_central": {
+      "nombre_servicio": "Servicio de Salud Metropolitano Central",
+      "espera_cirugia": 13381,
+      "espera_consulta_especialidad": 95881,
+      "variacion_cirugia_pct": 11.81,
+      "variacion_consulta_pct": null,
+      "fecha_corte": "JUNIO 2025",
+      "historico": [
+        {
+          "trimestre": "SEPTIEMBRE 2023",
+          "espera_cirugia": 10131,
+          "espera_consulta_especialidad": 70498
+        },
+        {
+          "trimestre": "DICIEMBRE 2023",
+          "espera_cirugia": 10327,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "MARZO 2024",
+          "espera_cirugia": 11274,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "JUNIO 2024",
+          "espera_cirugia": 11968,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "SEPTIEMBRE 2024",
+          "espera_cirugia": 12414,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "DICIEMBRE 2024",
+          "espera_cirugia": 12271,
+          "espera_consulta_especialidad": 85950
+        },
+        {
+          "trimestre": "MARZO 2025",
+          "espera_cirugia": 11711,
+          "espera_consulta_especialidad": 88994
+        },
+        {
+          "trimestre": "JUNIO 2025",
+          "espera_cirugia": 13381,
+          "espera_consulta_especialidad": 95881
+        }
+      ],
+      "url_fuente_real": "https://www.listaesperasalud.cl/data/data_SERVICIO_DE_SALUD_METROPOLITANO_CENTRAL.json"
+    },
+    "ss_metro_oriente": {
+      "nombre_servicio": "Servicio de Salud Metropolitano Oriente",
+      "espera_cirugia": 15104,
+      "espera_consulta_especialidad": 79787,
+      "variacion_cirugia_pct": 5.77,
+      "variacion_consulta_pct": null,
+      "fecha_corte": "JUNIO 2025",
+      "historico": [
+        {
+          "trimestre": "SEPTIEMBRE 2023",
+          "espera_cirugia": 11679,
+          "espera_consulta_especialidad": 77524
+        },
+        {
+          "trimestre": "DICIEMBRE 2023",
+          "espera_cirugia": 11876,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "MARZO 2024",
+          "espera_cirugia": 13113,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "JUNIO 2024",
+          "espera_cirugia": 14280,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "SEPTIEMBRE 2024",
+          "espera_cirugia": 14748,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "DICIEMBRE 2024",
+          "espera_cirugia": 13650,
+          "espera_consulta_especialidad": 78084
+        },
+        {
+          "trimestre": "MARZO 2025",
+          "espera_cirugia": 15317,
+          "espera_consulta_especialidad": 83504
+        },
+        {
+          "trimestre": "JUNIO 2025",
+          "espera_cirugia": 15104,
+          "espera_consulta_especialidad": 79787
+        }
+      ],
+      "url_fuente_real": "https://www.listaesperasalud.cl/data/data_SERVICIO_DE_SALUD_METROPOLITANO_ORIENTE.json"
+    },
+    "ss_metro_sur": {
+      "nombre_servicio": "Servicio de Salud Metropolitano Sur",
+      "espera_cirugia": 17216,
+      "espera_consulta_especialidad": 148099,
+      "variacion_cirugia_pct": 19.57,
+      "variacion_consulta_pct": null,
+      "fecha_corte": "JUNIO 2025",
+      "historico": [
+        {
+          "trimestre": "SEPTIEMBRE 2023",
+          "espera_cirugia": 11921,
+          "espera_consulta_especialidad": 110052
+        },
+        {
+          "trimestre": "DICIEMBRE 2023",
+          "espera_cirugia": 13021,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "MARZO 2024",
+          "espera_cirugia": 13747,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "JUNIO 2024",
+          "espera_cirugia": 14398,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "SEPTIEMBRE 2024",
+          "espera_cirugia": 14715,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "DICIEMBRE 2024",
+          "espera_cirugia": 16286,
+          "espera_consulta_especialidad": 138507
+        },
+        {
+          "trimestre": "MARZO 2025",
+          "espera_cirugia": 16956,
+          "espera_consulta_especialidad": 143989
+        },
+        {
+          "trimestre": "JUNIO 2025",
+          "espera_cirugia": 17216,
+          "espera_consulta_especialidad": 148099
+        }
+      ],
+      "url_fuente_real": "https://www.listaesperasalud.cl/data/data_SERVICIO_DE_SALUD_METROPOLITANO_SUR.json"
+    },
+    "ss_metro_sur_oriente": {
+      "nombre_servicio": "Servicio de Salud Metropolitano Sur-Oriente",
+      "espera_cirugia": 22166,
+      "espera_consulta_especialidad": 139933,
+      "variacion_cirugia_pct": 16.3,
+      "variacion_consulta_pct": null,
+      "fecha_corte": "JUNIO 2025",
+      "historico": [
+        {
+          "trimestre": "SEPTIEMBRE 2023",
+          "espera_cirugia": 16558,
+          "espera_consulta_especialidad": 101388
+        },
+        {
+          "trimestre": "DICIEMBRE 2023",
+          "espera_cirugia": 17285,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "MARZO 2024",
+          "espera_cirugia": 18301,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "JUNIO 2024",
+          "espera_cirugia": 19059,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "SEPTIEMBRE 2024",
+          "espera_cirugia": 19910,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "DICIEMBRE 2024",
+          "espera_cirugia": 22363,
+          "espera_consulta_especialidad": 129089
+        },
+        {
+          "trimestre": "MARZO 2025",
+          "espera_cirugia": 23580,
+          "espera_consulta_especialidad": 145054
+        },
+        {
+          "trimestre": "JUNIO 2025",
+          "espera_cirugia": 22166,
+          "espera_consulta_especialidad": 139933
+        }
+      ],
+      "url_fuente_real": "https://www.listaesperasalud.cl/data/data_SERVICIO_DE_SALUD_METROPOLITANO_SUR_ORIENTE.json"
+    },
+    "ss_ohiggins": {
+      "nombre_servicio": "Servicio de Salud O'Higgins",
+      "espera_cirugia": 27526,
+      "espera_consulta_especialidad": 105164,
+      "variacion_cirugia_pct": -5.73,
+      "variacion_consulta_pct": null,
+      "fecha_corte": "JUNIO 2025",
+      "historico": [
+        {
+          "trimestre": "SEPTIEMBRE 2023",
+          "espera_cirugia": 25824,
+          "espera_consulta_especialidad": 100824
+        },
+        {
+          "trimestre": "DICIEMBRE 2023",
+          "espera_cirugia": 27740,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "MARZO 2024",
+          "espera_cirugia": 29384,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "JUNIO 2024",
+          "espera_cirugia": 29198,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "SEPTIEMBRE 2024",
+          "espera_cirugia": 28998,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "DICIEMBRE 2024",
+          "espera_cirugia": 29364,
+          "espera_consulta_especialidad": 104545
+        },
+        {
+          "trimestre": "MARZO 2025",
+          "espera_cirugia": 29226,
+          "espera_consulta_especialidad": 106789
+        },
+        {
+          "trimestre": "JUNIO 2025",
+          "espera_cirugia": 27526,
+          "espera_consulta_especialidad": 105164
+        }
+      ],
+      "url_fuente_real": "https://www.listaesperasalud.cl/data/data_SERVICIO_DE_SALUD_O’HIGGINS.json"
+    },
+    "ss_maule": {
+      "nombre_servicio": "Servicio de Salud del Maule",
+      "espera_cirugia": 23931,
+      "espera_consulta_especialidad": 131977,
+      "variacion_cirugia_pct": -0.61,
+      "variacion_consulta_pct": null,
+      "fecha_corte": "JUNIO 2025",
+      "historico": [
+        {
+          "trimestre": "SEPTIEMBRE 2023",
+          "espera_cirugia": 21770,
+          "espera_consulta_especialidad": 117580
+        },
+        {
+          "trimestre": "DICIEMBRE 2023",
+          "espera_cirugia": 22694,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "MARZO 2024",
+          "espera_cirugia": 23312,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "JUNIO 2024",
+          "espera_cirugia": 24077,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "SEPTIEMBRE 2024",
+          "espera_cirugia": 24812,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "DICIEMBRE 2024",
+          "espera_cirugia": 24818,
+          "espera_consulta_especialidad": 128646
+        },
+        {
+          "trimestre": "MARZO 2025",
+          "espera_cirugia": 26177,
+          "espera_consulta_especialidad": 135629
+        },
+        {
+          "trimestre": "JUNIO 2025",
+          "espera_cirugia": 23931,
+          "espera_consulta_especialidad": 131977
+        }
+      ],
+      "url_fuente_real": "https://www.listaesperasalud.cl/data/data_SERVICIO_DE_SALUD_DEL_MAULE.json"
+    },
+    "ss_nuble": {
+      "nombre_servicio": "Servicio de Salud Ñuble",
+      "espera_cirugia": 14133,
+      "espera_consulta_especialidad": 74949,
+      "variacion_cirugia_pct": 27.35,
+      "variacion_consulta_pct": null,
+      "fecha_corte": "JUNIO 2025",
+      "historico": [
+        {
+          "trimestre": "SEPTIEMBRE 2023",
+          "espera_cirugia": 9485,
+          "espera_consulta_especialidad": 79127
+        },
+        {
+          "trimestre": "DICIEMBRE 2023",
+          "espera_cirugia": 9891,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "MARZO 2024",
+          "espera_cirugia": 10945,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "JUNIO 2024",
+          "espera_cirugia": 11098,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "SEPTIEMBRE 2024",
+          "espera_cirugia": 11456,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "DICIEMBRE 2024",
+          "espera_cirugia": 11797,
+          "espera_consulta_especialidad": 75345
+        },
+        {
+          "trimestre": "MARZO 2025",
+          "espera_cirugia": 13225,
+          "espera_consulta_especialidad": 78160
+        },
+        {
+          "trimestre": "JUNIO 2025",
+          "espera_cirugia": 14133,
+          "espera_consulta_especialidad": 74949
+        }
+      ],
+      "url_fuente_real": "https://www.listaesperasalud.cl/data/data_SERVICIO_DE_SALUD_NUBLE.json"
+    },
+    "ss_biobio": {
+      "nombre_servicio": "Servicio de Salud Biobío",
+      "espera_cirugia": 19618,
+      "espera_consulta_especialidad": 69065,
+      "variacion_cirugia_pct": 31.3,
+      "variacion_consulta_pct": null,
+      "fecha_corte": "JUNIO 2025",
+      "historico": [
+        {
+          "trimestre": "SEPTIEMBRE 2023",
+          "espera_cirugia": 13204,
+          "espera_consulta_especialidad": 60378
+        },
+        {
+          "trimestre": "DICIEMBRE 2023",
+          "espera_cirugia": 13987,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "MARZO 2024",
+          "espera_cirugia": 13632,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "JUNIO 2024",
+          "espera_cirugia": 14941,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "SEPTIEMBRE 2024",
+          "espera_cirugia": 15843,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "DICIEMBRE 2024",
+          "espera_cirugia": 18304,
+          "espera_consulta_especialidad": 67286
+        },
+        {
+          "trimestre": "MARZO 2025",
+          "espera_cirugia": 19593,
+          "espera_consulta_especialidad": 70046
+        },
+        {
+          "trimestre": "JUNIO 2025",
+          "espera_cirugia": 19618,
+          "espera_consulta_especialidad": 69065
+        }
+      ],
+      "url_fuente_real": "https://www.listaesperasalud.cl/data/data_SERVICIO_DE_SALUD_BIOBIO.json"
+    },
+    "ss_talcahuano": {
+      "nombre_servicio": "Servicio de Salud Talcahuano",
+      "espera_cirugia": 8195,
+      "espera_consulta_especialidad": 51408,
+      "variacion_cirugia_pct": 14.76,
+      "variacion_consulta_pct": null,
+      "fecha_corte": "JUNIO 2025",
+      "historico": [
+        {
+          "trimestre": "SEPTIEMBRE 2023",
+          "espera_cirugia": 6284,
+          "espera_consulta_especialidad": 49732
+        },
+        {
+          "trimestre": "DICIEMBRE 2023",
+          "espera_cirugia": 6099,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "MARZO 2024",
+          "espera_cirugia": 7055,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "JUNIO 2024",
+          "espera_cirugia": 7141,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "SEPTIEMBRE 2024",
+          "espera_cirugia": 7269,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "DICIEMBRE 2024",
+          "espera_cirugia": 7641,
+          "espera_consulta_especialidad": 49417
+        },
+        {
+          "trimestre": "MARZO 2025",
+          "espera_cirugia": 8364,
+          "espera_consulta_especialidad": 51917
+        },
+        {
+          "trimestre": "JUNIO 2025",
+          "espera_cirugia": 8195,
+          "espera_consulta_especialidad": 51408
+        }
+      ],
+      "url_fuente_real": "https://www.listaesperasalud.cl/data/data_SERVICIO_DE_SALUD_TALCAHUANO.json"
+    },
+    "ss_arauco": {
+      "nombre_servicio": "Servicio de Salud Arauco",
+      "espera_cirugia": 3788,
+      "espera_consulta_especialidad": 31326,
+      "variacion_cirugia_pct": 4.27,
+      "variacion_consulta_pct": null,
+      "fecha_corte": "JUNIO 2025",
+      "historico": [
+        {
+          "trimestre": "SEPTIEMBRE 2023",
+          "espera_cirugia": 3953,
+          "espera_consulta_especialidad": 27136
+        },
+        {
+          "trimestre": "DICIEMBRE 2023",
+          "espera_cirugia": 3939,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "MARZO 2024",
+          "espera_cirugia": 4002,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "JUNIO 2024",
+          "espera_cirugia": 3633,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "SEPTIEMBRE 2024",
+          "espera_cirugia": 3472,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "DICIEMBRE 2024",
+          "espera_cirugia": 3392,
+          "espera_consulta_especialidad": 27699
+        },
+        {
+          "trimestre": "MARZO 2025",
+          "espera_cirugia": 4178,
+          "espera_consulta_especialidad": 29533
+        },
+        {
+          "trimestre": "JUNIO 2025",
+          "espera_cirugia": 3788,
+          "espera_consulta_especialidad": 31326
+        }
+      ],
+      "url_fuente_real": "https://www.listaesperasalud.cl/data/data_SERVICIO_DE_SALUD_ARAUCO.json"
+    },
+    "ss_araucania_norte": {
+      "nombre_servicio": "Servicio de Salud Araucanía Norte",
+      "espera_cirugia": 3638,
+      "espera_consulta_especialidad": 43466,
+      "variacion_cirugia_pct": 2.33,
+      "variacion_consulta_pct": null,
+      "fecha_corte": "JUNIO 2025",
+      "historico": [
+        {
+          "trimestre": "SEPTIEMBRE 2023",
+          "espera_cirugia": 3660,
+          "espera_consulta_especialidad": 39195
+        },
+        {
+          "trimestre": "DICIEMBRE 2023",
+          "espera_cirugia": 3729,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "MARZO 2024",
+          "espera_cirugia": 3971,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "JUNIO 2024",
+          "espera_cirugia": 3555,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "SEPTIEMBRE 2024",
+          "espera_cirugia": 4199,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "DICIEMBRE 2024",
+          "espera_cirugia": 3737,
+          "espera_consulta_especialidad": 42493
+        },
+        {
+          "trimestre": "MARZO 2025",
+          "espera_cirugia": 3977,
+          "espera_consulta_especialidad": 42839
+        },
+        {
+          "trimestre": "JUNIO 2025",
+          "espera_cirugia": 3638,
+          "espera_consulta_especialidad": 43466
+        }
+      ],
+      "url_fuente_real": "https://www.listaesperasalud.cl/data/data_SERVICIO_DE_SALUD_ARAUCANIA_NORTE.json"
+    },
+    "ss_araucania_sur": {
+      "nombre_servicio": "Servicio de Salud Araucanía Sur",
+      "espera_cirugia": 24879,
+      "espera_consulta_especialidad": 171848,
+      "variacion_cirugia_pct": 30.05,
+      "variacion_consulta_pct": null,
+      "fecha_corte": "JUNIO 2025",
+      "historico": [
+        {
+          "trimestre": "SEPTIEMBRE 2023",
+          "espera_cirugia": 13616,
+          "espera_consulta_especialidad": 155192
+        },
+        {
+          "trimestre": "DICIEMBRE 2023",
+          "espera_cirugia": 12767,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "MARZO 2024",
+          "espera_cirugia": 12156,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "JUNIO 2024",
+          "espera_cirugia": 19131,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "SEPTIEMBRE 2024",
+          "espera_cirugia": 20294,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "DICIEMBRE 2024",
+          "espera_cirugia": 20807,
+          "espera_consulta_especialidad": 170452
+        },
+        {
+          "trimestre": "MARZO 2025",
+          "espera_cirugia": 24300,
+          "espera_consulta_especialidad": 171700
+        },
+        {
+          "trimestre": "JUNIO 2025",
+          "espera_cirugia": 24879,
+          "espera_consulta_especialidad": 171848
+        }
+      ],
+      "url_fuente_real": "https://www.listaesperasalud.cl/data/data_SERVICIO_DE_SALUD_ARAUCANIA_SUR.json"
+    },
+    "ss_valdivia": {
+      "nombre_servicio": "Servicio de Salud Los Ríos",
+      "espera_cirugia": 7110,
+      "espera_consulta_especialidad": 58997,
+      "variacion_cirugia_pct": 6.98,
+      "variacion_consulta_pct": null,
+      "fecha_corte": "JUNIO 2025",
+      "historico": [
+        {
+          "trimestre": "SEPTIEMBRE 2023",
+          "espera_cirugia": 7638,
+          "espera_consulta_especialidad": 52660
+        },
+        {
+          "trimestre": "DICIEMBRE 2023",
+          "espera_cirugia": 7092,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "MARZO 2024",
+          "espera_cirugia": 7096,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "JUNIO 2024",
+          "espera_cirugia": 6646,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "SEPTIEMBRE 2024",
+          "espera_cirugia": 6329,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "DICIEMBRE 2024",
+          "espera_cirugia": 7105,
+          "espera_consulta_especialidad": 59094
+        },
+        {
+          "trimestre": "MARZO 2025",
+          "espera_cirugia": 8087,
+          "espera_consulta_especialidad": 60917
+        },
+        {
+          "trimestre": "JUNIO 2025",
+          "espera_cirugia": 7110,
+          "espera_consulta_especialidad": 58997
+        }
+      ],
+      "url_fuente_real": "https://www.listaesperasalud.cl/data/data_SERVICIO_DE_SALUD_LOS_RIOS.json"
+    },
+    "ss_osorno": {
+      "nombre_servicio": "Servicio de Salud Osorno",
+      "espera_cirugia": 8764,
+      "espera_consulta_especialidad": 32330,
+      "variacion_cirugia_pct": 23.35,
+      "variacion_consulta_pct": null,
+      "fecha_corte": "JUNIO 2025",
+      "historico": [
+        {
+          "trimestre": "SEPTIEMBRE 2023",
+          "espera_cirugia": 6669,
+          "espera_consulta_especialidad": 37173
+        },
+        {
+          "trimestre": "DICIEMBRE 2023",
+          "espera_cirugia": 6940,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "MARZO 2024",
+          "espera_cirugia": 7237,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "JUNIO 2024",
+          "espera_cirugia": 7105,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "SEPTIEMBRE 2024",
+          "espera_cirugia": 7382,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "DICIEMBRE 2024",
+          "espera_cirugia": 7824,
+          "espera_consulta_especialidad": 33443
+        },
+        {
+          "trimestre": "MARZO 2025",
+          "espera_cirugia": 8236,
+          "espera_consulta_especialidad": 34831
+        },
+        {
+          "trimestre": "JUNIO 2025",
+          "espera_cirugia": 8764,
+          "espera_consulta_especialidad": 32330
+        }
+      ],
+      "url_fuente_real": "https://www.listaesperasalud.cl/data/data_SERVICIO_DE_SALUD_OSORNO.json"
+    },
+    "ss_reloncavi": {
+      "nombre_servicio": "Servicio de Salud del Reloncaví",
+      "espera_cirugia": 16238,
+      "espera_consulta_especialidad": 80072,
+      "variacion_cirugia_pct": 2.49,
+      "variacion_consulta_pct": null,
+      "fecha_corte": "JUNIO 2025",
+      "historico": [
+        {
+          "trimestre": "SEPTIEMBRE 2023",
+          "espera_cirugia": 12918,
+          "espera_consulta_especialidad": 73358
+        },
+        {
+          "trimestre": "DICIEMBRE 2023",
+          "espera_cirugia": 14035,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "MARZO 2024",
+          "espera_cirugia": 14614,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "JUNIO 2024",
+          "espera_cirugia": 15843,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "SEPTIEMBRE 2024",
+          "espera_cirugia": 17796,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "DICIEMBRE 2024",
+          "espera_cirugia": 16830,
+          "espera_consulta_especialidad": 80571
+        },
+        {
+          "trimestre": "MARZO 2025",
+          "espera_cirugia": 17677,
+          "espera_consulta_especialidad": 80284
+        },
+        {
+          "trimestre": "JUNIO 2025",
+          "espera_cirugia": 16238,
+          "espera_consulta_especialidad": 80072
+        }
+      ],
+      "url_fuente_real": "https://www.listaesperasalud.cl/data/data_SERVICIO_DE_SALUD_DEL_RELONCAVI.json"
+    },
+    "ss_chiloe": {
+      "nombre_servicio": "Servicio de Salud Chiloé",
+      "espera_cirugia": 4829,
+      "espera_consulta_especialidad": 27480,
+      "variacion_cirugia_pct": -2.39,
+      "variacion_consulta_pct": null,
+      "fecha_corte": "JUNIO 2025",
+      "historico": [
+        {
+          "trimestre": "SEPTIEMBRE 2023",
+          "espera_cirugia": 4487,
+          "espera_consulta_especialidad": 21332
+        },
+        {
+          "trimestre": "DICIEMBRE 2023",
+          "espera_cirugia": 4306,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "MARZO 2024",
+          "espera_cirugia": 4907,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "JUNIO 2024",
+          "espera_cirugia": 4947,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "SEPTIEMBRE 2024",
+          "espera_cirugia": 4681,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "DICIEMBRE 2024",
+          "espera_cirugia": 4901,
+          "espera_consulta_especialidad": 27335
+        },
+        {
+          "trimestre": "MARZO 2025",
+          "espera_cirugia": 5126,
+          "espera_consulta_especialidad": 27916
+        },
+        {
+          "trimestre": "JUNIO 2025",
+          "espera_cirugia": 4829,
+          "espera_consulta_especialidad": 27480
+        }
+      ],
+      "url_fuente_real": "https://www.listaesperasalud.cl/data/data_SERVICIO_DE_SALUD_CHILOE.json"
+    },
+    "ss_aysen": {
+      "nombre_servicio": "Servicio de Salud Aysén",
+      "espera_cirugia": 1577,
+      "espera_consulta_especialidad": 15396,
+      "variacion_cirugia_pct": 4.58,
+      "variacion_consulta_pct": null,
+      "fecha_corte": "JUNIO 2025",
+      "historico": [
+        {
+          "trimestre": "SEPTIEMBRE 2023",
+          "espera_cirugia": 1371,
+          "espera_consulta_especialidad": 9506
+        },
+        {
+          "trimestre": "DICIEMBRE 2023",
+          "espera_cirugia": 1255,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "MARZO 2024",
+          "espera_cirugia": 1528,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "JUNIO 2024",
+          "espera_cirugia": 1508,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "SEPTIEMBRE 2024",
+          "espera_cirugia": 1570,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "DICIEMBRE 2024",
+          "espera_cirugia": 1633,
+          "espera_consulta_especialidad": 14970
+        },
+        {
+          "trimestre": "MARZO 2025",
+          "espera_cirugia": 1609,
+          "espera_consulta_especialidad": 17587
+        },
+        {
+          "trimestre": "JUNIO 2025",
+          "espera_cirugia": 1577,
+          "espera_consulta_especialidad": 15396
+        }
+      ],
+      "url_fuente_real": "https://www.listaesperasalud.cl/data/data_SERVICIO_DE_SALUD_AYSEN.json"
+    },
+    "ss_magallanes": {
+      "nombre_servicio": "Servicio de Salud Magallanes",
+      "espera_cirugia": 3168,
+      "espera_consulta_especialidad": 26129,
+      "variacion_cirugia_pct": 7.43,
+      "variacion_consulta_pct": null,
+      "fecha_corte": "JUNIO 2025",
+      "historico": [
+        {
+          "trimestre": "SEPTIEMBRE 2023",
+          "espera_cirugia": 2720,
+          "espera_consulta_especialidad": 23883
+        },
+        {
+          "trimestre": "DICIEMBRE 2023",
+          "espera_cirugia": 2617,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "MARZO 2024",
+          "espera_cirugia": 2812,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "JUNIO 2024",
+          "espera_cirugia": 2949,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "SEPTIEMBRE 2024",
+          "espera_cirugia": 3172,
+          "espera_consulta_especialidad": null
+        },
+        {
+          "trimestre": "DICIEMBRE 2024",
+          "espera_cirugia": 3241,
+          "espera_consulta_especialidad": 24881
+        },
+        {
+          "trimestre": "MARZO 2025",
+          "espera_cirugia": 3308,
+          "espera_consulta_especialidad": 25267
+        },
+        {
+          "trimestre": "JUNIO 2025",
+          "espera_cirugia": 3168,
+          "espera_consulta_especialidad": 26129
+        }
+      ],
+      "url_fuente_real": "https://www.listaesperasalud.cl/data/data_SERVICIO_DE_SALUD_MAGALLANES.json"
+    }
+  },
   "establecimientos": {
     "hosp_san_jose": {
       "nombre": "Hospital San José",
       "servicio_salud_id": "ss_metro_norte",
-      "espera_cirugia": 3247,
-      "espera_consulta_especialidad": 11823,
-      "variacion_cirugia_pct": 8.3,
-      "variacion_consulta_pct": 12.1,
-      "fecha_corte": "Diciembre 2024",
       "es_hero": true
     },
     "hosp_roberto_del_rio": {
       "nombre": "Hospital Roberto del Río",
       "servicio_salud_id": "ss_metro_norte",
-      "espera_cirugia": 2156,
-      "espera_consulta_especialidad": 7834,
-      "variacion_cirugia_pct": 5.2,
-      "variacion_consulta_pct": 9.7,
-      "fecha_corte": "Diciembre 2024",
       "es_hero": true
     },
     "hosp_san_juan_dios": {
       "nombre": "Hospital San Juan de Dios",
       "servicio_salud_id": "ss_metro_occidente",
-      "espera_cirugia": 4123,
-      "espera_consulta_especialidad": 14567,
-      "variacion_cirugia_pct": 6.8,
-      "variacion_consulta_pct": 11.4,
-      "fecha_corte": "Diciembre 2024",
       "es_hero": false
     },
     "hosp_felix_bulnes": {
       "nombre": "Hospital Félix Bulnes Cerda",
       "servicio_salud_id": "ss_metro_occidente",
-      "espera_cirugia": 2876,
-      "espera_consulta_especialidad": 10234,
-      "variacion_cirugia_pct": 4.1,
-      "variacion_consulta_pct": 8.9,
-      "fecha_corte": "Diciembre 2024",
       "es_hero": false
     },
     "hosp_carmen_maipu": {
       "nombre": "Hospital El Carmen de Maipú Dr. Luis Valentín Ferrada",
       "servicio_salud_id": "ss_metro_occidente",
-      "espera_cirugia": 3456,
-      "espera_consulta_especialidad": 12890,
-      "variacion_cirugia_pct": 7.2,
-      "variacion_consulta_pct": 13.8,
-      "fecha_corte": "Diciembre 2024",
       "es_hero": false
     },
     "hosp_san_borja_arriarán": {
       "nombre": "Hospital San Borja Arriarán",
       "servicio_salud_id": "ss_metro_central",
-      "espera_cirugia": 3987,
-      "espera_consulta_especialidad": 13678,
-      "variacion_cirugia_pct": 9.1,
-      "variacion_consulta_pct": 14.3,
-      "fecha_corte": "Diciembre 2024",
       "es_hero": false
     },
-    "hosp_paula_jaraquemada": {
+    "hosp_exequiel_gonzalez_cortes": {
       "nombre": "Hospital Dr. Exequiel González Cortés",
-      "servicio_salud_id": "ss_metro_central",
-      "espera_cirugia": 1234,
-      "espera_consulta_especialidad": 4567,
-      "variacion_cirugia_pct": 3.2,
-      "variacion_consulta_pct": 6.8,
-      "fecha_corte": "Diciembre 2024",
+      "servicio_salud_id": "ss_metro_sur",
       "es_hero": false
     },
     "hosp_del_salvador": {
       "nombre": "Hospital del Salvador",
       "servicio_salud_id": "ss_metro_oriente",
-      "espera_cirugia": 3876,
-      "espera_consulta_especialidad": 13210,
-      "variacion_cirugia_pct": 7.9,
-      "variacion_consulta_pct": 11.6,
-      "fecha_corte": "Diciembre 2024",
       "es_hero": false
     },
     "hosp_luis_calvo_mackenna": {
       "nombre": "Hospital Dr. Luis Calvo Mackenna",
       "servicio_salud_id": "ss_metro_oriente",
-      "espera_cirugia": 1934,
-      "espera_consulta_especialidad": 6789,
-      "variacion_cirugia_pct": 4.7,
-      "variacion_consulta_pct": 9.2,
-      "fecha_corte": "Diciembre 2024",
       "es_hero": false
     },
     "hosp_barros_luco": {
       "nombre": "Hospital Barros Luco Trudeau",
       "servicio_salud_id": "ss_metro_sur",
-      "espera_cirugia": 5234,
-      "espera_consulta_especialidad": 17890,
-      "variacion_cirugia_pct": 10.8,
-      "variacion_consulta_pct": 15.2,
-      "fecha_corte": "Diciembre 2024",
       "es_hero": false
     },
     "hosp_la_florida": {
       "nombre": "Hospital Dr. Gustavo Fricke (La Florida)",
       "servicio_salud_id": "ss_metro_sur_oriente",
-      "espera_cirugia": 3567,
-      "espera_consulta_especialidad": 12345,
-      "variacion_cirugia_pct": 8.4,
-      "variacion_consulta_pct": 12.9,
-      "fecha_corte": "Diciembre 2024",
       "es_hero": false
     },
     "hosp_sotero_del_rio": {
       "nombre": "Hospital Dr. Sótero del Río",
       "servicio_salud_id": "ss_metro_sur_oriente",
-      "espera_cirugia": 6123,
-      "espera_consulta_especialidad": 21456,
-      "variacion_cirugia_pct": 11.3,
-      "variacion_consulta_pct": 16.7,
-      "fecha_corte": "Diciembre 2024",
       "es_hero": false
     },
     "hosp_regional_temuco": {
       "nombre": "Hospital Dr. Hernán Henríquez Aravena (Regional Temuco)",
       "servicio_salud_id": "ss_araucania_sur",
-      "espera_cirugia": 4831,
-      "espera_consulta_especialidad": 18456,
-      "variacion_cirugia_pct": 13.4,
-      "variacion_consulta_pct": 17.8,
-      "fecha_corte": "Diciembre 2024",
       "es_hero": true
     },
     "hosp_victoria": {
       "nombre": "Hospital de Victoria",
       "servicio_salud_id": "ss_araucania_sur",
-      "espera_cirugia": 1234,
-      "espera_consulta_especialidad": 4123,
-      "variacion_cirugia_pct": 6.7,
-      "variacion_consulta_pct": 10.2,
-      "fecha_corte": "Diciembre 2024",
       "es_hero": false
     },
     "hosp_carlos_van_buren": {
       "nombre": "Hospital Dr. Carlos Van Buren",
       "servicio_salud_id": "ss_valparaiso_sa",
-      "espera_cirugia": 4128,
-      "espera_consulta_especialidad": 14267,
-      "variacion_cirugia_pct": 9.7,
-      "variacion_consulta_pct": 13.5,
-      "fecha_corte": "Diciembre 2024",
       "es_hero": true
     },
     "hosp_eduardo_pereira": {
       "nombre": "Hospital Dr. Eduardo Pereira Rodríguez",
       "servicio_salud_id": "ss_valparaiso_sa",
-      "espera_cirugia": 2345,
-      "espera_consulta_especialidad": 8910,
-      "variacion_cirugia_pct": 7.3,
-      "variacion_consulta_pct": 11.9,
-      "fecha_corte": "Diciembre 2024",
       "es_hero": false
     },
     "hosp_gustavo_fricke": {
       "nombre": "Hospital Dr. Gustavo Fricke",
       "servicio_salud_id": "ss_vina_quillota",
-      "espera_cirugia": 3789,
-      "espera_consulta_especialidad": 13456,
-      "variacion_cirugia_pct": 8.1,
-      "variacion_consulta_pct": 12.6,
-      "fecha_corte": "Diciembre 2024",
       "es_hero": false
     },
     "hosp_quilpue": {
       "nombre": "Hospital de Quilpué",
       "servicio_salud_id": "ss_vina_quillota",
-      "espera_cirugia": 2123,
-      "espera_consulta_especialidad": 7456,
-      "variacion_cirugia_pct": 5.9,
-      "variacion_consulta_pct": 10.1,
-      "fecha_corte": "Diciembre 2024",
       "es_hero": false
     },
     "hosp_regional_rancagua": {
       "nombre": "Hospital Regional de Rancagua",
       "servicio_salud_id": "ss_ohiggins",
-      "espera_cirugia": 3654,
-      "espera_consulta_especialidad": 12890,
-      "variacion_cirugia_pct": 8.9,
-      "variacion_consulta_pct": 13.1,
-      "fecha_corte": "Diciembre 2024",
       "es_hero": false
     },
     "hosp_regional_talca": {
       "nombre": "Hospital Regional de Talca",
       "servicio_salud_id": "ss_maule",
-      "espera_cirugia": 3456,
-      "espera_consulta_especialidad": 12345,
-      "variacion_cirugia_pct": 7.8,
-      "variacion_consulta_pct": 12.4,
-      "fecha_corte": "Diciembre 2024",
       "es_hero": false
     },
     "hosp_herminda_martin": {
       "nombre": "Hospital Clínico Herminda Martín",
       "servicio_salud_id": "ss_nuble",
-      "espera_cirugia": 2987,
-      "espera_consulta_especialidad": 10234,
-      "variacion_cirugia_pct": 7.1,
-      "variacion_consulta_pct": 11.8,
-      "fecha_corte": "Diciembre 2024",
       "es_hero": false
     },
     "hosp_los_angeles": {
       "nombre": "Hospital Dr. Victor Ríos Ruiz",
       "servicio_salud_id": "ss_biobio",
-      "espera_cirugia": 2876,
-      "espera_consulta_especialidad": 9876,
-      "variacion_cirugia_pct": 6.4,
-      "variacion_consulta_pct": 10.9,
-      "fecha_corte": "Diciembre 2024",
       "es_hero": false
     },
     "hosp_las_higueras": {
       "nombre": "Hospital Las Higueras de Talcahuano",
       "servicio_salud_id": "ss_talcahuano",
-      "espera_cirugia": 3234,
-      "espera_consulta_especialidad": 11567,
-      "variacion_cirugia_pct": 7.6,
-      "variacion_consulta_pct": 12.3,
-      "fecha_corte": "Diciembre 2024",
       "es_hero": false
     },
     "hosp_guillermo_grant": {
       "nombre": "Hospital Guillermo Grant Benavente",
       "servicio_salud_id": "ss_talcahuano",
-      "espera_cirugia": 4567,
-      "espera_consulta_especialidad": 16234,
-      "variacion_cirugia_pct": 10.2,
-      "variacion_consulta_pct": 14.9,
-      "fecha_corte": "Diciembre 2024",
       "es_hero": false
     },
     "hosp_angol": {
       "nombre": "Hospital Alemania de Angol",
       "servicio_salud_id": "ss_araucania_norte",
-      "espera_cirugia": 1876,
-      "espera_consulta_especialidad": 6543,
-      "variacion_cirugia_pct": 5.8,
-      "variacion_consulta_pct": 9.7,
-      "fecha_corte": "Diciembre 2024",
       "es_hero": false
     },
     "hosp_valdivia": {
       "nombre": "Hospital Base de Valdivia",
       "servicio_salud_id": "ss_valdivia",
-      "espera_cirugia": 2987,
-      "espera_consulta_especialidad": 10456,
-      "variacion_cirugia_pct": 7.3,
-      "variacion_consulta_pct": 11.6,
-      "fecha_corte": "Diciembre 2024",
       "es_hero": false
     },
     "hosp_osorno": {
       "nombre": "Hospital Base de Osorno",
       "servicio_salud_id": "ss_osorno",
-      "espera_cirugia": 2345,
-      "espera_consulta_especialidad": 8234,
-      "variacion_cirugia_pct": 6.1,
-      "variacion_consulta_pct": 10.4,
-      "fecha_corte": "Diciembre 2024",
       "es_hero": false
     },
     "hosp_puerto_montt": {
       "nombre": "Hospital de Puerto Montt",
       "servicio_salud_id": "ss_reloncavi",
-      "espera_cirugia": 3123,
-      "espera_consulta_especialidad": 11234,
-      "variacion_cirugia_pct": 8.7,
-      "variacion_consulta_pct": 13.2,
-      "fecha_corte": "Diciembre 2024",
       "es_hero": false
     },
     "hosp_chiloe": {
       "nombre": "Hospital de Castro",
       "servicio_salud_id": "ss_chiloe",
-      "espera_cirugia": 1456,
-      "espera_consulta_especialidad": 5234,
-      "variacion_cirugia_pct": 5.4,
-      "variacion_consulta_pct": 9.1,
-      "fecha_corte": "Diciembre 2024",
       "es_hero": false
     },
     "hosp_coyhaique": {
       "nombre": "Hospital Regional de Coyhaique",
       "servicio_salud_id": "ss_aysen",
-      "espera_cirugia": 987,
-      "espera_consulta_especialidad": 3456,
-      "variacion_cirugia_pct": 4.2,
-      "variacion_consulta_pct": 7.8,
-      "fecha_corte": "Diciembre 2024",
       "es_hero": false
     },
     "hosp_punta_arenas": {
       "nombre": "Hospital Clínico de Magallanes Dr. Lautaro Navarro Avaria",
       "servicio_salud_id": "ss_magallanes",
-      "espera_cirugia": 1876,
-      "espera_consulta_especialidad": 6543,
-      "variacion_cirugia_pct": 5.9,
-      "variacion_consulta_pct": 9.8,
-      "fecha_corte": "Diciembre 2024",
       "es_hero": false
     },
     "hosp_la_serena": {
       "nombre": "Hospital San Juan de Dios de La Serena",
       "servicio_salud_id": "ss_coquimbo",
-      "espera_cirugia": 3456,
-      "espera_consulta_especialidad": 12345,
-      "variacion_cirugia_pct": 8.6,
-      "variacion_consulta_pct": 12.9,
-      "fecha_corte": "Diciembre 2024",
       "es_hero": false
     },
     "hosp_coquimbo": {
       "nombre": "Hospital de Coquimbo",
       "servicio_salud_id": "ss_coquimbo",
-      "espera_cirugia": 2678,
-      "espera_consulta_especialidad": 9456,
-      "variacion_cirugia_pct": 7.1,
-      "variacion_consulta_pct": 11.3,
-      "fecha_corte": "Diciembre 2024",
       "es_hero": false
     },
     "hosp_antofagasta": {
       "nombre": "Hospital Regional de Antofagasta Dr. Leonardo Guzmán",
       "servicio_salud_id": "ss_antofagasta",
-      "espera_cirugia": 3234,
-      "espera_consulta_especialidad": 11567,
-      "variacion_cirugia_pct": 8.2,
-      "variacion_consulta_pct": 12.7,
-      "fecha_corte": "Diciembre 2024",
       "es_hero": false
     },
     "hosp_calama": {
       "nombre": "Hospital Carlos Cisternas de Calama",
       "servicio_salud_id": "ss_antofagasta",
-      "espera_cirugia": 1987,
-      "espera_consulta_especialidad": 7123,
-      "variacion_cirugia_pct": 6.3,
-      "variacion_consulta_pct": 10.8,
-      "fecha_corte": "Diciembre 2024",
       "es_hero": false
     },
     "hosp_atacama": {
       "nombre": "Hospital San José del Carmen de Copiapó",
       "servicio_salud_id": "ss_atacama",
-      "espera_cirugia": 2123,
-      "espera_consulta_especialidad": 7456,
-      "variacion_cirugia_pct": 6.8,
-      "variacion_consulta_pct": 11.1,
-      "fecha_corte": "Diciembre 2024",
       "es_hero": false
     },
     "hosp_iquique": {
       "nombre": "Hospital Dr. Ernesto Torres Galdames",
       "servicio_salud_id": "ss_tarapaca",
-      "espera_cirugia": 2456,
-      "espera_consulta_especialidad": 8765,
-      "variacion_cirugia_pct": 7.4,
-      "variacion_consulta_pct": 11.9,
-      "fecha_corte": "Diciembre 2024",
       "es_hero": false
     },
     "hosp_arica": {
       "nombre": "Hospital Dr. Juan Noé Crevani de Arica",
       "servicio_salud_id": "ss_arica_parinacota",
-      "espera_cirugia": 2234,
-      "espera_consulta_especialidad": 7890,
-      "variacion_cirugia_pct": 6.9,
-      "variacion_consulta_pct": 11.2,
-      "fecha_corte": "Diciembre 2024",
       "es_hero": false
     },
     "hosp_san_antonio": {
       "nombre": "Hospital Claudio Vicuña de San Antonio",
       "servicio_salud_id": "ss_valparaiso_sa",
-      "espera_cirugia": 1678,
-      "espera_consulta_especialidad": 5987,
-      "variacion_cirugia_pct": 5.6,
-      "variacion_consulta_pct": 9.4,
-      "fecha_corte": "Diciembre 2024",
       "es_hero": false
     },
     "hosp_aconcagua": {
       "nombre": "Hospital San Camilo de San Felipe",
       "servicio_salud_id": "ss_aconcagua",
-      "espera_cirugia": 1876,
-      "espera_consulta_especialidad": 6543,
-      "variacion_cirugia_pct": 5.7,
-      "variacion_consulta_pct": 9.6,
-      "fecha_corte": "Diciembre 2024",
       "es_hero": false
     },
     "hosp_arauco": {
       "nombre": "Hospital de Arauco",
       "servicio_salud_id": "ss_arauco",
-      "espera_cirugia": 1456,
-      "espera_consulta_especialidad": 5234,
-      "variacion_cirugia_pct": 5.3,
-      "variacion_consulta_pct": 8.9,
-      "fecha_corte": "Diciembre 2024",
       "es_hero": false
     }
   }

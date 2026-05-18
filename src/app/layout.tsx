@@ -1,25 +1,30 @@
 import type { Metadata } from 'next'
-import { Geist } from 'next/font/google'
+import { Geist, Playfair_Display } from 'next/font/google'
 import './globals.css'
 
 const geist = Geist({ subsets: ['latin'], variable: '--font-geist-sans' })
+const playfair = Playfair_Display({
+  subsets: ['latin'],
+  weight: ['700', '900'],
+  variable: '--font-playfair',
+})
 
 export const metadata: Metadata = {
-  title: 'Salud Transparente Chile — ¿Llegó la plata a tu hospital?',
+  title: 'K-milla — Datos públicos de salud chilena, conectados',
   description:
-    'Conecta el presupuesto público de salud (DIPRES) con las listas de espera de tu hospital (MINSAL). Datos públicos, en lenguaje humano.',
-  keywords: ['salud', 'presupuesto', 'lista de espera', 'chile', 'transparencia', 'DIPRES', 'MINSAL'],
+    'Presupuesto recibido (DIPRES) y personas en lista de espera (MINSAL) de tu Servicio de Salud. En una sola búsqueda, en lenguaje simple.',
+  keywords: ['salud', 'presupuesto', 'lista de espera', 'chile', 'transparencia', 'DIPRES', 'MINSAL', 'K-milla'],
   openGraph: {
-    title: 'Salud Transparente Chile',
-    description: '¿Cuánto presupuesto recibió la red de salud de tu hospital? ¿Cómo evolucionó la lista de espera?',
+    title: 'K-milla',
+    description: 'Presupuesto y lista de espera de tu Servicio de Salud, conectados. Una sola búsqueda.',
     type: 'website',
   },
 }
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="es" className={`${geist.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col">{children}</body>
+    <html lang="es" className={`${geist.variable} ${playfair.variable} h-full antialiased bg-[#FAFBFC]`}>
+      <body className="min-h-full flex flex-col bg-[var(--color-background)]">{children}</body>
     </html>
   )
 }

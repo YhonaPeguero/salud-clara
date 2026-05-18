@@ -82,14 +82,14 @@
       "es_hero": false
     },
     {
-      "id": "hosp_paula_jaraquemada",
-      "display_nombre": "Hospital Dr. Exequiel González Cortés (Paula Jaraquemada)",
+      "id": "hosp_exequiel_gonzalez_cortes",
+      "display_nombre": "Hospital Dr. Exequiel González Cortés",
       "tipo": "hospital",
-      "servicio_salud_id": "ss_metro_central",
-      "servicio_salud_nombre": "Servicio de Salud Metropolitano Central",
+      "servicio_salud_id": "ss_metro_sur",
+      "servicio_salud_nombre": "Servicio de Salud Metropolitano Sur",
       "region": "Región Metropolitana",
-      "comunas": ["San Bernardo", "Lo Espejo"],
-      "search_terms": ["hospital paula jaraquemada", "paula jaraquemada", "exequiel gonzalez cortes", "san miguel"],
+      "comunas": ["San Miguel"],
+      "search_terms": ["hospital exequiel gonzalez cortes", "exequiel gonzalez cortes", "hospital pediatrico san miguel", "san miguel"],
       "es_hero": false
     },
     {

@@ -1,7 +1,17 @@
-import { getHeroDemos } from '@/lib/search'
+import { getHeroDemos, getDipresPeriodo, getMinsalPeriodo, getNationalStats } from '@/lib/search'
 import { SearchClient } from '@/components/SearchClient'
 
 export default function Home() {
   const heroes = getHeroDemos()
-  return <SearchClient initialHeroes={heroes} />
+  const dipresPeriodo = getDipresPeriodo()
+  const minsalPeriodo = getMinsalPeriodo()
+  const stats = getNationalStats()
+  return (
+    <SearchClient
+      initialHeroes={heroes}
+      dipresPeriodo={dipresPeriodo}
+      minsalPeriodo={minsalPeriodo}
+      stats={stats}
+    />
+  )
 }

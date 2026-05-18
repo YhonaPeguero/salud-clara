@@ -1,12 +1,60 @@
 import mappingRaw from '@data/mapping.json'
 import dipresRaw from '@data/dipres_ejecucion.json'
 import minsalRaw from '@data/minsal_espera.json'
-import type { MappingEntry, DipresServicio, MinsalEstablecimiento, SearchResult } from './types'
+import type { MappingEntry, DipresServicio, MinsalEstablecimiento, MinsalServicio, SearchResult } from './types'
 import { generarParrafo } from './format'
 
 const mapping = mappingRaw as { entries: MappingEntry[] }
 const dipres = dipresRaw as { servicios: Record<string, DipresServicio>; mes_corte: string }
-const minsal = minsalRaw as { establecimientos: Record<string, MinsalEstablecimiento>; fecha_corte: string }
+const minsal = minsalRaw as {
+  servicios: Record<string, MinsalServicio>
+  establecimientos: Record<string, MinsalEstablecimiento>
+  fecha_corte: string | null
+}
+
+export function getDipresPeriodo(): string | null {
+  return dipres.mes_corte ?? null
+}
+
+export function getMinsalPeriodo(): string | null {
+  return minsal.fecha_corte ?? null
+}
+
+export interface NationalStats {
+  totalPresupuestoVigenteMM: number
+  totalDevengadoMM: number
+  pctEjecucionNacional: number | null
+  totalEsperaCirugia: number
+  totalEsperaConsulta: number
+  serviciosCount: number
+  serviciosConDatoMinsal: number
+}
+
+export function getNationalStats(): NationalStats {
+  let totalVigente = 0
+  let totalDevengado = 0
+  for (const s of Object.values(dipres.servicios)) {
+    if (s.presupuesto_vigente_MM != null) totalVigente += s.presupuesto_vigente_MM
+    if (s.devengado_MM != null) totalDevengado += s.devengado_MM
+  }
+  let totalCirugia = 0
+  let totalConsulta = 0
+  let conDato = 0
+  for (const s of Object.values(minsal.servicios)) {
+    if (s.espera_cirugia != null) totalCirugia += s.espera_cirugia
+    if (s.espera_consulta_especialidad != null) totalConsulta += s.espera_consulta_especialidad
+    if (s.espera_cirugia != null || s.espera_consulta_especialidad != null) conDato++
+  }
+  return {
+    totalPresupuestoVigenteMM: totalVigente,
+    totalDevengadoMM: totalDevengado,
+    pctEjecucionNacional: totalVigente > 0 ? (totalDevengado / totalVigente) * 100 : null,
+    totalEsperaCirugia: totalCirugia,
+    totalEsperaConsulta: totalConsulta,
+    serviciosCount: Object.keys(dipres.servicios).length,
+    serviciosConDatoMinsal: conDato,
+  }
+}
 
 function normalize(str: string): string {
   return str
@@ -51,17 +99,15 @@ function buildResult(entry: MappingEntry): SearchResult | null {
   const dipresData = dipres.servicios[entry.servicio_salud_id]
   if (!dipresData) return null
 
-  let minsalData: MinsalEstablecimiento | null = null
-  let minsalId = entry.id
-
+  let establecimientoId = entry.id
   if (entry.tipo === 'comuna' && entry.establecimiento_principal_id) {
-    minsalId = entry.establecimiento_principal_id
+    establecimientoId = entry.establecimiento_principal_id
   }
-
-  minsalData = minsal.establecimientos[minsalId] ?? null
+  const establecimiento = minsal.establecimientos[establecimientoId] ?? null
+  const minsalData = minsal.servicios[entry.servicio_salud_id] ?? null
 
   const parrafo = generarParrafo({
-    nombreEstablecimiento: minsalData?.nombre ?? entry.display_nombre,
+    nombreEstablecimiento: establecimiento?.nombre ?? entry.display_nombre,
     tipoEntidad: entry.tipo,
     nombreServicio: entry.servicio_salud_nombre,
     region: entry.region,
@@ -79,6 +125,7 @@ function buildResult(entry: MappingEntry): SearchResult | null {
   return {
     entry,
     dipres: dipresData,
+    establecimiento,
     minsal: minsalData,
     parrafo,
     score: 0,

@@ -1,6 +1,8 @@
-# Salud Transparente Chile
+# K-milla
 
-**¿Llegó la plata a tu hospital?**
+> Datos públicos de salud chilena, conectados. Repo: `salud-clara` (histórico). Paquete: `k-milla`.
+
+**¿Llegó la plata a tu hospital? ¿Cuántas personas están esperando atención?**
 
 Conecta el presupuesto público de salud (DIPRES) con las listas de espera de tu hospital (MINSAL). Una sola búsqueda. Datos públicos. Lenguaje humano.
 
@@ -12,12 +14,17 @@ En Chile, ~15 millones de personas dependen de la salud pública. La ejecución 
 
 ## Qué Hace
 
-1. El ciudadano escribe su hospital o su comuna
+1. El ciudadano escribe su hospital, comuna o ciudad.
 2. En segundos recibe:
-   - Cuánto presupuesto recibió su **red regional de salud** (datos DIPRES)
-   - Cuánto se ejecutó de ese presupuesto
-   - Cómo evolucionó la **lista de espera en su hospital** (datos MINSAL)
-   - Un párrafo descriptivo que conecta ambos datos en lenguaje simple
+   - Cuánto presupuesto recibió su **Servicio de Salud regional** (DIPRES, último corte oficial)
+   - Cuánto se ejecutó (devengado sobre vigente, con % visual)
+   - Cuántas personas están en lista de espera de cirugía y de consulta de especialidad en esa misma red (MINSAL, último trimestre publicado)
+   - Sparkline con la evolución de los últimos 8 trimestres
+   - Variación interanual contra el mismo trimestre del año anterior
+   - Párrafo descriptivo en lenguaje simple
+   - Asistente conversacional que solo responde con cifras del contexto inyectado, nunca inventa
+
+Banner nacional en el hero: presupuesto vigente total + ejecución agregada + total nacional de personas esperando — todo con count-up animado.
 
 ## Principios Innegociables
 
@@ -33,13 +40,14 @@ En Chile, ~15 millones de personas dependen de la salud pública. La ejecución 
 - **Framework**: Next.js 16 con App Router y Turbopack
 - **Lenguaje**: TypeScript
 - **Estilos**: Tailwind CSS
+- **Package manager**: npm (`package-lock.json`)
 - **Datos**: JSON estático pre-ingresado (sin base de datos)
 - **Deploy**: Vercel (free tier)
 
 ## Estructura del Repositorio
 
 ```
-salud-transparente-chile/
+salud-clara/
 ├── data/
 │   ├── mapping.json           ← TABLA MAESTRA: commune/hospital → Servicio de Salud
 │   ├── dipres_ejecucion.json  ← Presupuesto por Servicio de Salud (DIPRES)
@@ -50,10 +58,12 @@ salud-transparente-chile/
 ├── src/
 │   ├── app/
 │   │   ├── api/search/        ← API de búsqueda
-│   │   ├── api/heroes/        ← Demos verificadas
+│   │   ├── api/heroes/        ← Ejemplos de búsqueda
+│   │   ├── api/chat/          ← Asistente conversacional
 │   │   └── page.tsx           ← Página principal
 │   ├── components/
-│   │   └── SearchClient.tsx   ← UI interactiva
+│   │   ├── SearchClient.tsx   ← UI interactiva
+│   │   └── ChatAssistant.tsx  ← Asistente de consulta
 │   └── lib/
 │       ├── types.ts           ← Tipos TypeScript
 │       ├── search.ts          ← Motor de búsqueda
@@ -72,7 +82,7 @@ nombre de hospital / comuna → Servicio de Salud (para datos DIPRES)
 nombre de hospital          → ID establecimiento (para datos MINSAL)
 ```
 
-### Servicios de Salud incluidos (29 servicios)
+### Servicios de Salud incluidos (28 servicios)
 
 | ID | Nombre | Región |
 |---|---|---|
@@ -105,9 +115,9 @@ nombre de hospital          → ID establecimiento (para datos MINSAL)
 | ss_tarapaca | Servicio de Salud Tarapacá | Tarapacá |
 | ss_arica_parinacota | Servicio de Salud Arica y Parinacota | Arica y Parinacota |
 
-### Demos Héroe Verificadas
+### Ejemplos de Búsqueda
 
-Estas tres búsquedas tienen datos verificados y garantizados para la demo en vivo:
+Estas tres búsquedas existen en el mapeo inicial y sirven para probar la experiencia:
 
 | Búsqueda | Servicio de Salud | Hospital Principal |
 |---|---|---|
@@ -127,7 +137,7 @@ Estas tres búsquedas tienen datos verificados y garantizados para la demo en vi
 - **Frecuencia**: Mensual, con corte a fin de mes
 
 ### MINSAL - Visor Ciudadano
-- **URL**: https://visortiemposespera.minsal.cl/
+- **URL**: https://www.listaesperasalud.cl/
 - **Qué publica**: Listas de espera por establecimiento (consultas y cirugías)
 - **Unidad**: Hospital / Establecimiento
 - **Frecuencia**: Mensual
@@ -138,8 +148,8 @@ Estas tres búsquedas tienen datos verificados y garantizados para la demo en vi
 
 ```bash
 # Clonar el repositorio
-git clone https://github.com/tu-usuario/salud-transparente-chile
-cd salud-transparente-chile
+git clone https://github.com/YhonaPeguero/salud-clara.git
+cd salud-clara
 
 # Instalar dependencias
 npm install
@@ -151,27 +161,44 @@ npm run dev
 npm run build
 ```
 
-## Actualizar Datos
+## Variables de entorno
+
+| Variable | Dónde | Necesaria para | Si falta |
+|---|---|---|---|
+| `MINIMAX_API_KEY` | Solo servidor (Vercel → Project Settings → Environment Variables) | Asistente conversacional (`/api/chat`) | La API responde 503 y el chat muestra un mensaje informativo. El buscador y los datos siguen funcionando. |
+
+La key vive exclusivamente en el servidor (`src/app/api/chat/route.ts`). Nunca se expone al cliente. No se commitea ningún archivo `.env*`.
+
+## Actualizar Datos (un comando)
+
+Regla de integridad: cada cifra en `data/` debe venir de una fuente oficial trazable o quedar como `null`. Todo dato real/null debe documentarse en `data/_data_audit.md`.
+
+Los scripts son Node puro (cero dependencias extra) y descargan directamente desde los endpoints oficiales:
 
 ```bash
-# Instalar dependencias Python (solo para scripts de ingesta)
-pip install requests pandas openpyxl
+# Refrescar DIPRES (XML por servicio desde dipres.gob.cl)
+npm run ingest:dipres
 
-# Actualizar datos DIPRES (requiere Excel descargado manualmente)
-python scripts/ingest_dipres.py ruta/al/archivo_dipres.xlsx 2024
+# Refrescar MINSAL (JSON por servicio desde listaesperasalud.cl)
+npm run ingest:minsal
 
-# Explorar API MINSAL
-python scripts/ingest_minsal.py
-
-# Actualizar datos MINSAL (desde CSV del Visor)
-python scripts/ingest_minsal.py ruta/al/datos_minsal.csv "Diciembre 2024"
+# Ambos
+npm run ingest
 ```
 
-Después de actualizar los JSON en `data/`, hacer commit y deploy:
+Cada script:
+
+- Recorre los 28 Servicios de Salud
+- Si la fuente devuelve 200 con la cifra esperada → escribe la cifra y la URL en `data/*.json`
+- Si la fuente falla o devuelve `null` → escribe `null` con `nota` describiendo el motivo (regla CLAUDE.md #1)
+- Calcula variación interanual MINSAL contra el mismo trimestre del año anterior
+- Guarda los últimos 8 trimestres como `historico` para los sparklines
+
+Después de un refresh, ver `git diff data/` para confirmar qué cambió, actualizar `data/_data_audit.md` si la metodología cambió, y commitear:
 
 ```bash
 git add data/
-git commit -m "feat: actualizar datos a [MES ANO]"
+git commit -m "data: refresh dipres+minsal a [PERIODO]"
 git push
 # Vercel re-deploya automáticamente
 ```
@@ -180,13 +207,18 @@ git push
 
 ## Deploy en Vercel
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Ftu-usuario%2Fsalud-transparente-chile)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FYhonaPeguero%2Fsalud-clara&env=MINIMAX_API_KEY&envDescription=API+key+para+el+asistente+conversacional+(opcional+pero+recomendada))
+
+El proyecto incluye `vercel.json` mínimo. Pasos manuales:
 
 ```bash
-# O usando Vercel CLI
 npm i -g vercel
-vercel deploy
+vercel link        # vincular al proyecto Vercel
+vercel env add MINIMAX_API_KEY   # opcional, solo si quieres el chat
+vercel --prod      # deploy producción
 ```
+
+Sin `MINIMAX_API_KEY` el buscador, los datos y la UI funcionan al 100% — solo el chat responde 503 con un mensaje informativo.
 
 ---
 
@@ -211,5 +243,5 @@ MIT License — libre para usar, modificar y distribuir.
 
 ---
 
-*Proyecto desarrollado para hackathon hack@latam 2026 — Track Transparency & Corruption*
-*Datos públicos de DIPRES y MINSAL Chile*
+*K-milla — proyecto para Hack@LATAM 2026, track Transparency & Corruption.*
+*Datos públicos de DIPRES y MINSAL Chile.*

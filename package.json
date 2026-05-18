@@ -1,13 +1,20 @@
 {
-  "name": "hackaton-cl",
+  "name": "k-milla",
   "version": "0.1.0",
   "private": true,
+  "packageManager": "npm@11.4.2",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "ingest:dipres": "node scripts/ingest_dipres.mjs",
+    "ingest:minsal": "node scripts/ingest_minsal.mjs",
+    "ingest": "npm run ingest:dipres && npm run ingest:minsal"
   },
   "dependencies": {
+    "@ai-sdk/openai-compatible": "^2.0.47",
+    "@ai-sdk/react": "^3.0.186",
+    "ai": "^6.0.184",
     "next": "16.2.6",
     "react": "19.2.4",
     "react-dom": "19.2.4"

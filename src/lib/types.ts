@@ -14,30 +14,45 @@ export interface MappingEntry {
 export interface DipresServicio {
   nombre: string
   region: string
-  presupuesto_inicial_MM: number
-  presupuesto_vigente_MM: number
-  devengado_MM: number
-  pct_ejecucion: number
-  poblacion_beneficiaria_aprox: number
-  mes_corte: string
+  presupuesto_inicial_MM: number | null
+  presupuesto_vigente_MM: number | null
+  devengado_MM: number | null
+  pct_ejecucion: number | null
+  poblacion_beneficiaria_aprox: number | null
+  mes_corte: string | null
+  url_fuente_real?: string | null
   es_hero: boolean
 }
 
 export interface MinsalEstablecimiento {
   nombre: string
   servicio_salud_id: string
-  espera_cirugia: number
-  espera_consulta_especialidad: number
+  es_hero: boolean
+}
+
+export interface MinsalHistoricoPunto {
+  trimestre: string
+  espera_cirugia: number | null
+  espera_consulta_especialidad: number | null
+}
+
+export interface MinsalServicio {
+  nombre_servicio: string
+  espera_cirugia: number | null
+  espera_consulta_especialidad: number | null
   variacion_cirugia_pct: number | null
   variacion_consulta_pct: number | null
-  fecha_corte: string
-  es_hero: boolean
+  fecha_corte: string | null
+  historico?: MinsalHistoricoPunto[]
+  url_fuente_real?: string | null
+  nota?: string
 }
 
 export interface SearchResult {
   entry: MappingEntry
   dipres: DipresServicio
-  minsal: MinsalEstablecimiento | null
+  establecimiento: MinsalEstablecimiento | null
+  minsal: MinsalServicio | null
   parrafo: string
   score: number
 }
