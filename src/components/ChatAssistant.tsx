@@ -2,9 +2,58 @@
 
 import { useChat } from '@ai-sdk/react'
 import { DefaultChatTransport, type UIMessage } from 'ai'
-import { useState, useRef, useEffect, type FormEvent } from 'react'
+import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { HologramAvatar } from './HologramAvatar'
+import styles from './HolographicMedicalAgent.module.css'
+
+type SpeechRecognitionAlternativeLike = {
+  transcript: string
+}
+
+type SpeechRecognitionResultLike = {
+  readonly length: number
+  readonly isFinal: boolean
+  [index: number]: SpeechRecognitionAlternativeLike
+}
+
+type SpeechRecognitionEventLike = Event & {
+  resultIndex: number
+  results: {
+    readonly length: number
+    [index: number]: SpeechRecognitionResultLike
+  }
+}
+
+type SpeechRecognitionErrorEventLike = Event & {
+  error?: string
+}
+
+type SpeechRecognitionLike = EventTarget & {
+  lang: string
+  continuous: boolean
+  interimResults: boolean
+  maxAlternatives: number
+  onresult: ((event: SpeechRecognitionEventLike) => void) | null
+  onerror: ((event: SpeechRecognitionErrorEventLike) => void) | null
+  onend: (() => void) | null
+  start: () => void
+  stop: () => void
+  abort: () => void
+}
+
+type SpeechRecognitionConstructor = new () => SpeechRecognitionLike
+
+declare global {
+  interface Window {
+    SpeechRecognition?: SpeechRecognitionConstructor
+    webkitSpeechRecognition?: SpeechRecognitionConstructor
+  }
+}
 
 const chatTransport = new DefaultChatTransport({ api: '/api/chat' })
+const AGENT_NAME = 'K-milla'
+const LOCALE = 'es-CL'
+const WELCOME_TEXT = 'Hola, soy el asistente holográfico de K-milla. Puedo ayudarte a entender presupuesto DIPRES y listas de espera MINSAL usando solo los datos oficiales cargados.'
 
 const suggestedQuestions = [
   '¿Cuánto presupuesto recibió el Servicio Metropolitano Norte?',
@@ -19,173 +68,481 @@ function getMessageText(message: UIMessage): string {
     .join('')
 }
 
+function useTypewriter(text: string, textKey: string, speed = 18) {
+  const [displayed, setDisplayed] = useState('')
+  const [done, setDone] = useState(false)
+  const targetRef = useRef(text)
+  const displayedRef = useRef('')
+  const skipRef = useRef(false)
+
+  useEffect(() => {
+    skipRef.current = false
+    targetRef.current = text
+    displayedRef.current = ''
+    setDisplayed('')
+    setDone(text.length === 0)
+    // Reset only when a different assistant message starts streaming.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [textKey])
+
+  useEffect(() => {
+    targetRef.current = text
+
+    if (!text) {
+      displayedRef.current = ''
+      setDisplayed('')
+      setDone(true)
+      return
+    }
+
+    if (skipRef.current) {
+      displayedRef.current = text
+      setDisplayed(text)
+      setDone(true)
+      return
+    }
+
+    let cancelled = false
+    let timeoutId: number | null = null
+
+    const tick = () => {
+      if (cancelled) return
+
+      const target = targetRef.current
+      const current = displayedRef.current
+
+      if (skipRef.current || current === target) {
+        displayedRef.current = target
+        setDisplayed(target)
+        setDone(true)
+        return
+      }
+
+      const next = target.startsWith(current)
+        ? target.slice(0, current.length + 1)
+        : target.slice(0, Math.min(target.length, current.length + 1))
+
+      displayedRef.current = next
+      setDisplayed(next)
+      setDone(next === target)
+
+      if (next !== target) {
+        timeoutId = window.setTimeout(tick, speed)
+      }
+    }
+
+    setDone(displayedRef.current === text)
+    timeoutId = window.setTimeout(tick, speed)
+
+    return () => {
+      cancelled = true
+      if (timeoutId != null) window.clearTimeout(timeoutId)
+    }
+  }, [text, speed])
+
+  const skip = useCallback(() => {
+    skipRef.current = true
+    displayedRef.current = targetRef.current
+    setDisplayed(targetRef.current)
+    setDone(true)
+  }, [])
+
+  return { displayed, done, skip }
+}
+
 export function ChatAssistant() {
   const [isOpen, setIsOpen] = useState(false)
   const [input, setInput] = useState('')
-  const messagesEndRef = useRef<HTMLDivElement>(null)
+  const [isListening, setIsListening] = useState(false)
+  const [isSpeaking, setIsSpeaking] = useState(false)
+  const [voiceOutputEnabled, setVoiceOutputEnabled] = useState(false)
+  const [notice, setNotice] = useState<string | null>(null)
+  const [showHistory, setShowHistory] = useState(false)
+  const recognitionRef = useRef<SpeechRecognitionLike | null>(null)
+  const transcriptRef = useRef('')
+  const historyEndRef = useRef<HTMLDivElement | null>(null)
+  const spokenMessageIdRef = useRef<string | null>(null)
 
   const { messages, sendMessage, status, setMessages, error, clearError } = useChat({
     transport: chatTransport,
   })
 
-  const isLoading = status === 'submitted' || status === 'streaming'
+  const isThinking = status === 'submitted' || status === 'streaming'
+  const lastMessage = messages[messages.length - 1]
+  const showThinkingDots = isThinking && lastMessage?.role === 'user'
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }
-
-  useEffect(() => {
-    scrollToBottom()
+  const latestAssistantMessage = useMemo(() => {
+    for (let index = messages.length - 1; index >= 0; index -= 1) {
+      if (messages[index]?.role === 'assistant') return messages[index]
+    }
+    return null
   }, [messages])
 
-  const submitQuestion = async (question: string) => {
-    const value = question.trim()
-    if (!value || isLoading) return
+  const lastUserMessage = useMemo(() => {
+    for (let index = messages.length - 1; index >= 0; index -= 1) {
+      if (messages[index]?.role === 'user') return messages[index]
+    }
+    return null
+  }, [messages])
 
+  const latestAssistantText = latestAssistantMessage ? getMessageText(latestAssistantMessage) : WELCOME_TEXT
+  const latestAssistantKey = latestAssistantMessage?.id ?? 'welcome'
+  const typewriter = useTypewriter(latestAssistantText, latestAssistantKey)
+
+  const supportsSpeechRecognition = useMemo(() => {
+    if (typeof window === 'undefined') return false
+    return Boolean(window.SpeechRecognition ?? window.webkitSpeechRecognition)
+  }, [])
+
+  const supportsSpeechSynthesis = useMemo(() => {
+    return typeof window !== 'undefined' && 'speechSynthesis' in window
+  }, [])
+
+  useEffect(() => {
+    if (showHistory) {
+      historyEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
+    }
+  }, [messages, showHistory, isThinking])
+
+  useEffect(() => {
+    return () => {
+      recognitionRef.current?.abort()
+      if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+        window.speechSynthesis.cancel()
+      }
+    }
+  }, [])
+
+  const openAgent = useCallback(() => {
+    setIsOpen(true)
+  }, [])
+
+  const closeAgent = useCallback(() => {
+    recognitionRef.current?.abort()
+    recognitionRef.current = null
+    setIsListening(false)
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      window.speechSynthesis.cancel()
+    }
+    setIsSpeaking(false)
+    setShowHistory(false)
+    setIsOpen(false)
+  }, [])
+
+  const speak = useCallback((text: string) => {
+    if (!voiceOutputEnabled || !supportsSpeechSynthesis) return
+
+    window.speechSynthesis.cancel()
+    const utterance = new SpeechSynthesisUtterance(text)
+    utterance.lang = LOCALE
+    utterance.rate = 0.98
+    utterance.pitch = 1.02
+
+    const voices = window.speechSynthesis.getVoices()
+    const preferredVoice =
+      voices.find(voice => voice.lang.toLowerCase() === LOCALE.toLowerCase()) ??
+      voices.find(voice => voice.lang.toLowerCase().startsWith('es-cl')) ??
+      voices.find(voice => voice.lang.toLowerCase().startsWith('es'))
+
+    if (preferredVoice) utterance.voice = preferredVoice
+
+    utterance.onstart = () => setIsSpeaking(true)
+    utterance.onend = () => setIsSpeaking(false)
+    utterance.onerror = () => setIsSpeaking(false)
+
+    window.speechSynthesis.speak(utterance)
+  }, [supportsSpeechSynthesis, voiceOutputEnabled])
+
+  useEffect(() => {
+    if (!latestAssistantMessage || isThinking || latestAssistantMessage.id === spokenMessageIdRef.current) return
+
+    spokenMessageIdRef.current = latestAssistantMessage.id
+    speak(getMessageText(latestAssistantMessage))
+  }, [isThinking, latestAssistantMessage, speak])
+
+  const submitQuestion = useCallback(async (question: string) => {
+    const value = question.trim()
+    if (!value || isThinking) return
+
+    openAgent()
     clearError()
+    setNotice(null)
     setInput('')
+
     try {
       await sendMessage({ text: value })
     } catch {
-      // useChat exposes the error state for rendering.
+      setNotice('No pudimos completar la respuesta. Verifica MINIMAX_API_KEY o intenta de nuevo.')
     }
-  }
+  }, [clearError, isThinking, openAgent, sendMessage])
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const submit = useCallback((event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     void submitQuestion(input)
-  }
+  }, [input, submitQuestion])
 
-  const clearChat = () => {
+  const clearChat = useCallback(() => {
     clearError()
+    setNotice(null)
+    setShowHistory(false)
     setMessages([])
-  }
+    spokenMessageIdRef.current = null
+  }, [clearError, setMessages])
+
+  const toggleVoiceOutput = useCallback(() => {
+    if (!supportsSpeechSynthesis) {
+      setNotice('Este navegador no soporta salida de voz. Puedes seguir usando texto.')
+      return
+    }
+
+    setNotice(null)
+    setVoiceOutputEnabled((enabled) => {
+      if (enabled) {
+        window.speechSynthesis.cancel()
+        setIsSpeaking(false)
+      }
+      return !enabled
+    })
+  }, [supportsSpeechSynthesis])
+
+  const toggleListening = useCallback(() => {
+    if (!supportsSpeechRecognition) {
+      setNotice('Este navegador no soporta entrada por voz. Puedes escribir tu consulta.')
+      return
+    }
+
+    if (isListening) {
+      recognitionRef.current?.stop()
+      setIsListening(false)
+      return
+    }
+
+    const Recognition = window.SpeechRecognition ?? window.webkitSpeechRecognition
+    if (!Recognition) {
+      setNotice('Este navegador no soporta entrada por voz. Puedes escribir tu consulta.')
+      return
+    }
+
+    openAgent()
+    setNotice(null)
+    transcriptRef.current = ''
+
+    const recognition = new Recognition()
+    recognition.lang = LOCALE
+    recognition.continuous = false
+    recognition.interimResults = true
+    recognition.maxAlternatives = 1
+
+    recognition.onresult = (event) => {
+      let interimTranscript = ''
+      let finalTranscript = transcriptRef.current
+
+      for (let index = event.resultIndex; index < event.results.length; index += 1) {
+        const result = event.results[index]
+        const transcript = result[0]?.transcript ?? ''
+        if (result.isFinal) {
+          finalTranscript += transcript
+        } else {
+          interimTranscript += transcript
+        }
+      }
+
+      transcriptRef.current = finalTranscript
+      setInput(`${finalTranscript}${interimTranscript}`.trimStart())
+    }
+
+    recognition.onerror = (event) => {
+      setNotice(
+        event.error === 'not-allowed'
+          ? 'El navegador bloqueó el micrófono. Puedes escribir tu consulta.'
+          : 'No pude capturar audio con claridad. Puedes intentarlo de nuevo o escribir.',
+      )
+      setIsListening(false)
+    }
+
+    recognition.onend = () => {
+      setIsListening(false)
+      const finalText = transcriptRef.current.trim()
+      if (finalText) void submitQuestion(finalText)
+    }
+
+    recognitionRef.current = recognition
+    setIsListening(true)
+    recognition.start()
+  }, [isListening, openAgent, submitQuestion, supportsSpeechRecognition])
+
+  const handleDialogClick = useCallback(() => {
+    if (!typewriter.done) typewriter.skip()
+  }, [typewriter])
+
+  const displayedNotice = notice ?? (error ? 'No pudimos completar la respuesta. Verifica MINIMAX_API_KEY o intenta de nuevo.' : null)
 
   return (
-    <>
-      {/* Floating button */}
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-6 right-6 z-50 w-14 h-14 bg-[var(--color-primary)] hover:bg-[var(--color-primary-muted)] text-white rounded-full shadow-lg shadow-[var(--color-primary)]/25 flex items-center justify-center transition-all duration-300 hover:scale-105"
-        aria-label={isOpen ? 'Cerrar chat' : 'Abrir asistente'}
-      >
-        {isOpen ? (
-          <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        ) : (
-          <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-          </svg>
-        )}
-      </button>
+    <div
+      className={[styles.agentShell, isOpen ? styles.active : styles.idle, styles.right].join(' ')}
+      data-holographic-medical-agent="true"
+    >
+      {isOpen ? <div className={styles.backdrop} onClick={closeAgent} aria-hidden="true" /> : null}
 
-      {/* Chat panel */}
-      <div
-        className={`fixed bottom-24 right-6 z-50 w-[360px] max-h-[500px] bg-white rounded-2xl shadow-2xl shadow-black/10 border border-gray-200 flex flex-col overflow-hidden transition-all duration-300 ${
-          isOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'
-        }`}
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 bg-[var(--color-surface-dark)] border-b border-gray-800">
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
-            <span className="text-sm font-medium text-white">Asistente K-milla</span>
-          </div>
-          {messages.length > 0 && (
-            <button
-              onClick={clearChat}
-              className="text-xs text-gray-400 hover:text-white transition-colors"
-            >
-              Limpiar
-            </button>
-          )}
+      <div className={styles.stage}>
+        <div className={styles.figureWrap}>
+          <button
+            type="button"
+            className={styles.figureButton}
+            onClick={openAgent}
+            disabled={isOpen}
+            aria-label={isOpen ? 'Holograma activo' : 'Abrir asistente holográfico'}
+          >
+            <div className={styles.figureCanvas}>
+              <HologramAvatar
+                active={isOpen}
+                listening={isListening}
+                speaking={isSpeaking}
+                thinking={isThinking}
+              />
+            </div>
+            {!isOpen ? <span className={styles.idleLabel}>Asistente</span> : null}
+          </button>
         </div>
 
-        {/* Messages */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-3 min-h-[280px] max-h-[340px]">
-          {messages.length === 0 ? (
-            <div className="space-y-3">
-              <p className="text-sm text-gray-500 text-center">
-                Pregúntame sobre hospitales, presupuestos o listas de espera
-              </p>
-              <div className="space-y-2">
-                {suggestedQuestions.map((q, i) => (
+        {isOpen ? (
+          <div className={styles.dialogArea}>
+            <button type="button" className={styles.closeBtn} onClick={closeAgent} aria-label="Cerrar agente">
+              X
+            </button>
+
+            <div className={styles.statusChip} aria-live="polite">
+              <span className={styles.statusDot} data-active={isListening || isSpeaking || isThinking} />
+              {isListening
+                ? 'Escuchando...'
+                : isSpeaking
+                  ? 'Hablando...'
+                  : isThinking
+                    ? 'Pensando...'
+                    : 'En línea'}
+            </div>
+
+            {lastUserMessage && isThinking ? (
+              <div className={styles.userBubble}>
+                <span>Tú</span>
+                <p>{getMessageText(lastUserMessage)}</p>
+              </div>
+            ) : null}
+
+            <div
+              className={styles.dialogBox}
+              onClick={handleDialogClick}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault()
+                  handleDialogClick()
+                }
+              }}
+            >
+              <div className={styles.namePlate}>{AGENT_NAME}</div>
+              <div className={styles.dialogText} aria-live="polite">
+                {showThinkingDots ? (
+                  <span className={styles.thinkingDots} aria-label="Pensando">
+                    <i />
+                    <i />
+                    <i />
+                  </span>
+                ) : (
+                  <p>
+                    {typewriter.displayed}
+                    {!typewriter.done ? <span className={styles.caret}>|</span> : null}
+                  </p>
+                )}
+              </div>
+              {typewriter.done && !isThinking ? <span className={styles.chevron}>v</span> : null}
+            </div>
+
+            {displayedNotice ? <p className={styles.notice}>{displayedNotice}</p> : null}
+
+            {messages.length === 0 && !isThinking ? (
+              <div className={styles.suggestions}>
+                {suggestedQuestions.map((question) => (
                   <button
-                    key={i}
-                    onClick={() => void submitQuestion(q)}
-                    className="w-full text-left text-xs text-gray-600 bg-gray-50 hover:bg-gray-100 px-3 py-2 rounded-lg transition-colors"
+                    key={question}
+                    type="button"
+                    className={styles.suggestionBtn}
+                    onClick={() => void submitQuestion(question)}
                   >
-                    {q}
+                    {question}
                   </button>
                 ))}
               </div>
-            </div>
-          ) : (
-            messages.map((message) => (
-              <div
-                key={message.id}
-                className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-              >
-                <div
-                  className={`max-w-[85%] px-3 py-2 rounded-xl text-sm ${
-                    message.role === 'user'
-                      ? 'bg-[var(--color-primary)] text-white rounded-br-sm'
-                      : 'bg-gray-100 text-gray-800 rounded-bl-sm'
-                  }`}
-                >
-                  {getMessageText(message)}
-                </div>
-              </div>
-            ))
-          )}
-          {error && (
-            <div className="rounded-xl border border-red-100 bg-red-50 px-3 py-2 text-xs text-red-600">
-              No pudimos completar la respuesta. Verifica la configuración de `MINIMAX_API_KEY` o intenta de nuevo.
-            </div>
-          )}
-          {isLoading && (
-            <div className="flex justify-start">
-              <div className="bg-gray-100 px-3 py-2 rounded-xl rounded-bl-sm">
-                <div className="flex gap-1">
-                  <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                  <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                  <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
-                </div>
-              </div>
-            </div>
-          )}
-          <div ref={messagesEndRef} />
-        </div>
+            ) : null}
 
-        {/* Input */}
-        <form 
-          onSubmit={handleSubmit}
-          data-chat-form
-          className="p-3 border-t border-gray-100"
-        >
-          <div className="flex items-center gap-2">
-            <input
-              name="chat-input"
-              type="text"
-              value={input}
-              onChange={event => setInput(event.target.value)}
-              placeholder="Escribe tu pregunta..."
-              className="flex-1 text-sm px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/50 focus:border-transparent"
-              disabled={isLoading}
-            />
-            <button
-              type="submit"
-              disabled={isLoading || !input?.trim()}
-              className="p-2 bg-[var(--color-primary)] hover:bg-[var(--color-primary-muted)] disabled:opacity-40 text-white rounded-lg transition-colors disabled:cursor-not-allowed"
-            >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-              </svg>
-            </button>
+            {messages.length > 1 ? (
+              <div className={styles.historyActions}>
+                <button
+                  type="button"
+                  className={styles.historyToggle}
+                  onClick={() => setShowHistory((current) => !current)}
+                >
+                  {showHistory ? 'Ocultar conversación' : 'Ver conversación completa'}
+                </button>
+                <button type="button" className={styles.historyToggle} onClick={clearChat}>
+                  Limpiar
+                </button>
+              </div>
+            ) : null}
+
+            {showHistory ? (
+              <div className={styles.history} role="log" aria-live="polite">
+                {messages.map((message) => (
+                  <div
+                    key={message.id}
+                    className={message.role === 'assistant' ? styles.historyAssistant : styles.historyUser}
+                  >
+                    <span>{message.role === 'assistant' ? AGENT_NAME : 'Tú'}</span>
+                    <p>{getMessageText(message)}</p>
+                  </div>
+                ))}
+                <div ref={historyEndRef} />
+              </div>
+            ) : null}
+
+            <form className={styles.composer} onSubmit={submit}>
+              <input
+                type="text"
+                value={input}
+                onChange={(event) => setInput(event.target.value)}
+                placeholder="Escribe tu consulta..."
+                aria-label="Escribe tu consulta"
+                className={styles.input}
+                disabled={isThinking}
+              />
+              <button
+                type="button"
+                className={styles.iconBtn}
+                onClick={toggleVoiceOutput}
+                data-active={voiceOutputEnabled}
+                aria-label={voiceOutputEnabled ? 'Silenciar voz' : 'Activar voz'}
+                title={voiceOutputEnabled ? 'Silenciar voz' : 'Activar voz'}
+              >
+                Voz
+              </button>
+              <button
+                type="button"
+                className={styles.iconBtn}
+                onClick={toggleListening}
+                data-active={isListening}
+                aria-label={isListening ? 'Detener micrófono' : 'Hablar'}
+                title={isListening ? 'Detener micrófono' : 'Hablar'}
+              >
+                Mic
+              </button>
+              <button type="submit" className={styles.sendBtn} disabled={!input.trim() || isThinking}>
+                Enviar
+              </button>
+            </form>
           </div>
-        </form>
+        ) : null}
       </div>
-    </>
+    </div>
   )
 }
