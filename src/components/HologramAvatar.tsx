@@ -140,8 +140,8 @@ function MedicalHologramFigure({ active, listening, speaking, thinking }: Hologr
       uniforms: {
         uMap: { value: texture },
         uTime: { value: 0 },
-        uColor: { value: new THREE.Color('#7be5ff') },
-        uColorB: { value: new THREE.Color('#c9f6ff') },
+        uColor: { value: new THREE.Color('#22c55e') },
+        uColorB: { value: new THREE.Color('#d9ffe8') },
         uIntensity: { value: targetIntensity },
         uOpacity: { value: 0.95 },
         uReady: { value: 0 },
@@ -220,15 +220,15 @@ function HoloFloor({ listening, speaking }: HologramAvatarProps) {
     <group position={[0, -1.85, 0]} rotation={[Math.PI / 2.05, 0, 0]}>
       <mesh ref={ringRef}>
         <torusGeometry args={[0.95, 0.012, 8, 96]} />
-        <meshBasicMaterial color="#7be5ff" transparent opacity={0.7} blending={THREE.AdditiveBlending} />
+        <meshBasicMaterial color="#22c55e" transparent opacity={0.82} blending={THREE.AdditiveBlending} />
       </mesh>
       <mesh ref={ringRef2}>
         <torusGeometry args={[0.7, 0.008, 8, 80]} />
-        <meshBasicMaterial color="#bff5ff" transparent opacity={0.55} blending={THREE.AdditiveBlending} />
+        <meshBasicMaterial color="#bbf7d0" transparent opacity={0.68} blending={THREE.AdditiveBlending} />
       </mesh>
       <mesh>
         <ringGeometry args={[0, 0.58, 64]} />
-        <meshBasicMaterial color="#5cd4f0" transparent opacity={0.12} blending={THREE.AdditiveBlending} />
+        <meshBasicMaterial color="#10b981" transparent opacity={0.18} blending={THREE.AdditiveBlending} />
       </mesh>
     </group>
   )
@@ -280,7 +280,7 @@ function ParticleField({ active, listening, speaking }: HologramAvatarProps) {
         <bufferAttribute attach="attributes-position" args={[positions, 3]} />
       </bufferGeometry>
       <pointsMaterial
-        color="#a4ecff"
+        color="#34d399"
         size={0.022 + energy * 0.008}
         transparent
         opacity={0.32 + energy * 0.15}

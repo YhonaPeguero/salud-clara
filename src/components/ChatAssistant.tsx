@@ -1,10 +1,19 @@
 'use client'
 
-import { useChat } from '@ai-sdk/react'
-import { DefaultChatTransport, type UIMessage } from 'ai'
 import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { HologramAvatar } from './HologramAvatar'
 import styles from './HolographicMedicalAgent.module.css'
+
+type AgentMessage = {
+  id: string
+  role: 'user' | 'assistant'
+  content: string
+}
+
+type AgentResponse = {
+  text?: string
+  error?: string
+}
 
 type SpeechRecognitionAlternativeLike = {
   transcript: string
@@ -50,10 +59,9 @@ declare global {
   }
 }
 
-const chatTransport = new DefaultChatTransport({ api: '/api/chat' })
 const AGENT_NAME = 'K-milla'
 const LOCALE = 'es-CL'
-const WELCOME_TEXT = 'Hola, soy el asistente holográfico de K-milla. Puedo ayudarte a entender presupuesto DIPRES y listas de espera MINSAL usando solo los datos oficiales cargados.'
+const WELCOME_TEXT = 'Hola, soy el asistente holográfico de K-milla. Puedo ayudarte a entender presupuesto DIPRES y listas de espera MINSAL usando los datos oficiales cargados localmente.'
 
 const suggestedQuestions = [
   '¿Cuánto presupuesto recibió el Servicio Metropolitano Norte?',
@@ -61,11 +69,12 @@ const suggestedQuestions = [
   'Explica qué es el presupuesto vigente',
 ]
 
-function getMessageText(message: UIMessage): string {
-  return message.parts
-    .filter(part => part.type === 'text')
-    .map(part => part.text)
-    .join('')
+function createMessageId() {
+  if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
+    return crypto.randomUUID()
+  }
+
+  return `${Date.now()}-${Math.random().toString(36).slice(2)}`
 }
 
 function useTypewriter(text: string, textKey: string, speed = 18) {
@@ -81,7 +90,7 @@ function useTypewriter(text: string, textKey: string, speed = 18) {
     displayedRef.current = ''
     setDisplayed('')
     setDone(text.length === 0)
-    // Reset only when a different assistant message starts streaming.
+    // Reset only when a different assistant message starts.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [textKey])
 
@@ -152,10 +161,12 @@ function useTypewriter(text: string, textKey: string, speed = 18) {
 
 export function ChatAssistant() {
   const [isOpen, setIsOpen] = useState(false)
+  const [messages, setMessages] = useState<AgentMessage[]>([])
   const [input, setInput] = useState('')
+  const [isThinking, setIsThinking] = useState(false)
   const [isListening, setIsListening] = useState(false)
   const [isSpeaking, setIsSpeaking] = useState(false)
-  const [voiceOutputEnabled, setVoiceOutputEnabled] = useState(false)
+  const [voiceOutputEnabled, setVoiceOutputEnabled] = useState(true)
   const [notice, setNotice] = useState<string | null>(null)
   const [showHistory, setShowHistory] = useState(false)
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null)
@@ -163,11 +174,6 @@ export function ChatAssistant() {
   const historyEndRef = useRef<HTMLDivElement | null>(null)
   const spokenMessageIdRef = useRef<string | null>(null)
 
-  const { messages, sendMessage, status, setMessages, error, clearError } = useChat({
-    transport: chatTransport,
-  })
-
-  const isThinking = status === 'submitted' || status === 'streaming'
   const lastMessage = messages[messages.length - 1]
   const showThinkingDots = isThinking && lastMessage?.role === 'user'
 
@@ -185,7 +191,7 @@ export function ChatAssistant() {
     return null
   }, [messages])
 
-  const latestAssistantText = latestAssistantMessage ? getMessageText(latestAssistantMessage) : WELCOME_TEXT
+  const latestAssistantText = latestAssistantMessage?.content ?? WELCOME_TEXT
   const latestAssistantKey = latestAssistantMessage?.id ?? 'welcome'
   const typewriter = useTypewriter(latestAssistantText, latestAssistantKey)
 
@@ -257,7 +263,7 @@ export function ChatAssistant() {
     if (!latestAssistantMessage || isThinking || latestAssistantMessage.id === spokenMessageIdRef.current) return
 
     spokenMessageIdRef.current = latestAssistantMessage.id
-    speak(getMessageText(latestAssistantMessage))
+    speak(latestAssistantMessage.content)
   }, [isThinking, latestAssistantMessage, speak])
 
   const submitQuestion = useCallback(async (question: string) => {
@@ -265,16 +271,50 @@ export function ChatAssistant() {
     if (!value || isThinking) return
 
     openAgent()
-    clearError()
     setNotice(null)
     setInput('')
 
+    const userMessage: AgentMessage = { id: createMessageId(), role: 'user', content: value }
+    const outboundMessages = [...messages, userMessage]
+    setMessages(outboundMessages)
+    setIsThinking(true)
+
     try {
-      await sendMessage({ text: value })
-    } catch {
-      setNotice('No pudimos completar la respuesta. Verifica MINIMAX_API_KEY o intenta de nuevo.')
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: outboundMessages.map(message => ({
+            role: message.role,
+            content: message.content,
+          })),
+        }),
+      })
+
+      const payload = (await response.json().catch(() => null)) as AgentResponse | null
+      if (!response.ok || !payload?.text) {
+        throw new Error(payload?.error ?? 'No se pudo obtener respuesta del agente.')
+      }
+
+      setMessages([
+        ...outboundMessages,
+        { id: createMessageId(), role: 'assistant', content: payload.text },
+      ])
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Error inesperado al consultar el agente.'
+      setNotice(message)
+      setMessages([
+        ...outboundMessages,
+        {
+          id: createMessageId(),
+          role: 'assistant',
+          content: 'No pude responder con el servicio conversacional. Intenta de nuevo con un hospital, comuna o Servicio de Salud cargado.',
+        },
+      ])
+    } finally {
+      setIsThinking(false)
     }
-  }, [clearError, isThinking, openAgent, sendMessage])
+  }, [isThinking, messages, openAgent])
 
   const submit = useCallback((event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -282,12 +322,11 @@ export function ChatAssistant() {
   }, [input, submitQuestion])
 
   const clearChat = useCallback(() => {
-    clearError()
     setNotice(null)
     setShowHistory(false)
     setMessages([])
     spokenMessageIdRef.current = null
-  }, [clearError, setMessages])
+  }, [])
 
   const toggleVoiceOutput = useCallback(() => {
     if (!supportsSpeechSynthesis) {
@@ -375,8 +414,6 @@ export function ChatAssistant() {
     if (!typewriter.done) typewriter.skip()
   }, [typewriter])
 
-  const displayedNotice = notice ?? (error ? 'No pudimos completar la respuesta. Verifica MINIMAX_API_KEY o intenta de nuevo.' : null)
-
   return (
     <div
       className={[styles.agentShell, isOpen ? styles.active : styles.idle, styles.right].join(' ')}
@@ -425,7 +462,7 @@ export function ChatAssistant() {
             {lastUserMessage && isThinking ? (
               <div className={styles.userBubble}>
                 <span>Tú</span>
-                <p>{getMessageText(lastUserMessage)}</p>
+                <p>{lastUserMessage.content}</p>
               </div>
             ) : null}
 
@@ -459,7 +496,7 @@ export function ChatAssistant() {
               {typewriter.done && !isThinking ? <span className={styles.chevron}>v</span> : null}
             </div>
 
-            {displayedNotice ? <p className={styles.notice}>{displayedNotice}</p> : null}
+            {notice ? <p className={styles.notice}>{notice}</p> : null}
 
             {messages.length === 0 && !isThinking ? (
               <div className={styles.suggestions}>
@@ -499,7 +536,7 @@ export function ChatAssistant() {
                     className={message.role === 'assistant' ? styles.historyAssistant : styles.historyUser}
                   >
                     <span>{message.role === 'assistant' ? AGENT_NAME : 'Tú'}</span>
-                    <p>{getMessageText(message)}</p>
+                    <p>{message.content}</p>
                   </div>
                 ))}
                 <div ref={historyEndRef} />
