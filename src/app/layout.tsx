@@ -14,6 +14,10 @@ export const metadata: Metadata = {
   description:
     'Presupuesto recibido (DIPRES) y personas en lista de espera (MINSAL) de tu Servicio de Salud. En una sola búsqueda, en lenguaje simple.',
   keywords: ['salud', 'presupuesto', 'lista de espera', 'chile', 'transparencia', 'DIPRES', 'MINSAL', 'K-milla'],
+  icons: {
+    icon: '/favicon.svg',
+    shortcut: '/favicon.svg',
+  },
   openGraph: {
     title: 'K-milla',
     description: 'Presupuesto y lista de espera de tu Servicio de Salud, conectados. Una sola búsqueda.',

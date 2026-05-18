@@ -6,6 +6,8 @@
 
 Conecta el presupuesto público de salud (DIPRES) con las listas de espera de tu Servicio de Salud (MINSAL). Una sola búsqueda. Datos públicos. Lenguaje humano.
 
+![Preview de K-milla](./public/preview.svg)
+
 ---
 
 ## El Problema
