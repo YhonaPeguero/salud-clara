@@ -5,13 +5,13 @@ import './globals.css'
 const geist = Geist({ subsets: ['latin'], variable: '--font-geist-sans' })
 
 export const metadata: Metadata = {
-  title: 'Salud Transparente — Consulta el presupuesto de tu red de salud',
+  title: 'Salud Transparente Chile — Consulta el presupuesto de tu red de salud',
   description:
-    'Datos publicos de DIPRES y MINSAL traducidos a lenguaje humano. Descubre cuanto recibio tu hospital y como va la lista de espera.',
+    'Datos públicos de DIPRES y MINSAL traducidos a lenguaje humano. Descubre cuánto recibió tu hospital y cómo va la lista de espera.',
   keywords: ['salud', 'presupuesto', 'lista de espera', 'chile', 'transparencia', 'DIPRES', 'MINSAL', 'hackathon'],
   openGraph: {
-    title: 'Salud Transparente',
-    description: 'Consulta el presupuesto de tu red de salud. Datos publicos, lenguaje humano.',
+    title: 'Salud Transparente Chile',
+    description: 'Consulta el presupuesto de tu red de salud. Datos públicos, lenguaje humano.',
     type: 'website',
   },
 }

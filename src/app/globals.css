@@ -36,6 +36,25 @@
 }
 
 :root {
+  --font-sans: 'Geist', 'Geist Fallback', system-ui, sans-serif;
+  --color-background: #FAFBFC;
+  --color-foreground: #0F172A;
+  --color-card: #FFFFFF;
+  --color-card-foreground: #1E293B;
+  --color-primary: #0D9488;
+  --color-primary-foreground: #FFFFFF;
+  --color-primary-muted: #14B8A6;
+  --color-accent: #F97316;
+  --color-accent-foreground: #FFFFFF;
+  --color-muted: #F1F5F9;
+  --color-muted-foreground: #64748B;
+  --color-border: #E2E8F0;
+  --color-success: #10B981;
+  --color-warning: #F59E0B;
+  --color-danger: #EF4444;
+  --color-surface-dark: #0F172A;
+  --color-surface-dark-muted: #1E293B;
+  --radius: 1rem;
   --background: var(--color-background);
   --foreground: var(--color-foreground);
 }

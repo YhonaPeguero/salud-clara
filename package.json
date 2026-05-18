@@ -1,7 +1,8 @@
 {
-  "name": "hackaton-cl",
+  "name": "salud-transparente-chile",
   "version": "0.1.0",
   "private": true,
+  "packageManager": "npm@11.4.2",
   "scripts": {
     "dev": "next dev",
     "build": "next build",

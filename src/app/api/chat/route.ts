@@ -1,75 +1,130 @@
 import { createOpenAICompatible } from '@ai-sdk/openai-compatible'
-import { streamText } from 'ai'
+import { convertToModelMessages, streamText, type UIMessage } from 'ai'
 
 // Data imports
 import mappingData from '../../../../data/mapping.json'
 import dipresData from '../../../../data/dipres_ejecucion.json'
 import minsalData from '../../../../data/minsal_espera.json'
 
-const minimax = createOpenAICompatible({
-  name: 'minimax',
-  baseURL: 'https://api.minimax.chat/v1',
-  headers: {
-    Authorization: `Bearer ${process.env.MINIMAX_API_KEY}`,
-  },
-})
+type MappingEntry = {
+  display_nombre: string
+  tipo: string
+  servicio_salud_id: string
+  servicio_salud_nombre: string
+  region: string
+}
+
+type DipresServicio = {
+  nombre?: string | null
+  region?: string | null
+  presupuesto_vigente_MM?: number | null
+  devengado_MM?: number | null
+  pct_ejecucion?: number | null
+  mes_corte?: string | null
+}
+
+type MinsalEstablecimiento = {
+  nombre?: string | null
+  servicio_salud_id?: string | null
+  espera_cirugia?: number | null
+  espera_consulta_especialidad?: number | null
+  fecha_corte?: string | null
+}
 
 // Build context from data
 function buildDataContext() {
-  const servicios = Object.keys(mappingData).slice(0, 10).map(servicio => {
-    const hospitales = mappingData[servicio as keyof typeof mappingData]
-    const presupuesto = dipresData.find(d => d.servicio_salud === servicio)
-    const esperaList = minsalData.filter(m => 
-      hospitales.some(h => m.establecimiento.toLowerCase().includes(h.toLowerCase()))
+  const mappingEntries = (mappingData as { entries: MappingEntry[] }).entries
+  const serviciosDipres = (dipresData as { servicios: Record<string, DipresServicio | null> }).servicios
+  const establecimientosMinsal = (minsalData as {
+    establecimientos: Record<string, MinsalEstablecimiento | null>
+  }).establecimientos
+
+  const servicios = Object.entries(serviciosDipres).map(([servicioId, presupuesto]) => {
+    const entradasServicio = mappingEntries.filter(entry => entry.servicio_salud_id === servicioId)
+    const esperaServicio = Object.values(establecimientosMinsal).filter(
+      establecimiento => establecimiento?.servicio_salud_id === servicioId
     )
-    
+
     return {
-      servicio,
-      hospitales: hospitales.slice(0, 3),
-      presupuesto: presupuesto ? {
-        vigente: presupuesto.presupuesto_vigente,
-        ejecutado: presupuesto.gasto_devengado,
-        porcentaje: presupuesto.porcentaje_ejecucion
-      } : null,
-      espera: esperaList.slice(0, 2).map(e => ({
-        establecimiento: e.establecimiento,
-        total: e.casos_totales_espera,
-        mayor1ano: e.casos_espera_mas_1_ano
-      }))
+      servicio_id: servicioId,
+      nombre: presupuesto?.nombre ?? entradasServicio[0]?.servicio_salud_nombre ?? servicioId,
+      region: presupuesto?.region ?? entradasServicio[0]?.region ?? null,
+      presupuesto: presupuesto
+        ? {
+            presupuesto_vigente_MM: presupuesto.presupuesto_vigente_MM ?? null,
+            devengado_MM: presupuesto.devengado_MM ?? null,
+            pct_ejecucion: presupuesto.pct_ejecucion ?? null,
+            mes_corte: presupuesto.mes_corte ?? null,
+          }
+        : null,
+      establecimientos: entradasServicio
+        .filter(entry => entry.tipo !== 'comuna')
+        .slice(0, 5)
+        .map(entry => entry.display_nombre),
+      listas_espera: esperaServicio.slice(0, 5).map(establecimiento => ({
+        establecimiento: establecimiento?.nombre ?? null,
+        espera_cirugia: establecimiento?.espera_cirugia ?? null,
+        espera_consulta_especialidad: establecimiento?.espera_consulta_especialidad ?? null,
+        fecha_corte: establecimiento?.fecha_corte ?? null,
+      })),
     }
   })
-  
+
   return JSON.stringify(servicios, null, 2)
 }
 
-const SYSTEM_PROMPT = `Eres el asistente de "Salud Transparente", una aplicación que muestra datos públicos de salud de Chile.
+function buildSystemPrompt() {
+  return `Eres el asistente de "Salud Transparente Chile", una aplicación que muestra datos públicos de salud de Chile.
 
 DATOS DISPONIBLES:
 ${buildDataContext()}
 
 INSTRUCCIONES:
 - Responde en español chileno, de forma clara y directa
-- Si preguntan por un hospital o servicio específico, busca en los datos
+- Usa exclusivamente los DATOS DISPONIBLES. No inventes, estimes ni completes cifras.
+- Si un dato no aparece o viene en null, di que no está disponible en los datos cargados.
+- No digas que los datos son en vivo: corresponden al corte informado en cada registro.
+- Si preguntan por un hospital o servicio específico, busca en los datos cargados
 - Explica los términos técnicos en lenguaje simple:
   - "Presupuesto vigente" = plata asignada para el año
   - "Gasto devengado" = plata ya gastada
   - "Porcentaje de ejecución" = qué % del presupuesto se ha usado
   - "Lista de espera" = personas esperando atención
-  - "Casos >1 año" = personas esperando más de un año
 - Sé empático, estos datos afectan la vida de las personas
 - Si no tienes el dato, dilo honestamente
 - Respuestas cortas y útiles, máximo 3-4 oraciones
 - Puedes sugerir que busquen un hospital específico en la app`
+}
 
 export async function POST(req: Request) {
-  const { messages } = await req.json()
+  const apiKey = process.env.MINIMAX_API_KEY
+  if (!apiKey) {
+    return Response.json({ error: 'Falta configurar MINIMAX_API_KEY.' }, { status: 503 })
+  }
+
+  let body: { messages?: UIMessage[] }
+  try {
+    body = await req.json()
+  } catch {
+    return Response.json({ error: 'Solicitud inválida.' }, { status: 400 })
+  }
+
+  if (!Array.isArray(body.messages)) {
+    return Response.json({ error: 'La solicitud debe incluir messages.' }, { status: 400 })
+  }
+
+  const minimax = createOpenAICompatible({
+    name: 'minimax',
+    baseURL: 'https://api.minimax.chat/v1',
+    apiKey,
+  })
 
   const result = streamText({
     model: minimax('MiniMax-Text-01'),
-    system: SYSTEM_PROMPT,
-    messages,
-    maxTokens: 500,
+    system: buildSystemPrompt(),
+    messages: await convertToModelMessages(body.messages),
+    maxOutputTokens: 500,
   })
 
-  return result.toDataStreamResponse()
+  return result.toUIMessageStreamResponse()
 }

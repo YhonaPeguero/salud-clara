@@ -1,4 +1,5 @@
-export function formatMillones(mm: number): string {
+export function formatMillones(mm: number | null | undefined): string {
+  if (mm === null || mm === undefined) return 'Sin dato'
   if (mm >= 1000) {
     const billones = mm / 1000
     return `$${billones.toLocaleString('es-CL', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} mil millones`
@@ -12,7 +13,8 @@ export function formatVariacion(pct: number | null): string {
   return `${signo}${pct.toFixed(1)}%`
 }
 
-export function formatNumero(n: number): string {
+export function formatNumero(n: number | null | undefined): string {
+  if (n === null || n === undefined) return 'Sin dato'
   return n.toLocaleString('es-CL')
 }
 
@@ -21,10 +23,10 @@ export function generarParrafo(params: {
   tipoEntidad: string
   nombreServicio: string
   region: string
-  presupuestoVigenteMMCLP: number
-  devengadoMMCLP: number
-  pctEjecucion: number
-  mesCorte: string
+  presupuestoVigenteMMCLP: number | null
+  devengadoMMCLP: number | null
+  pctEjecucion: number | null
+  mesCorte: string | null
   esperaCirugia: number | null
   esperaConsulta: number | null
   variacionCirugiaPct: number | null
@@ -46,10 +48,11 @@ export function generarParrafo(params: {
     fechaCorteMinsal,
   } = params
 
-  const ppto = formatMillones(presupuestoVigenteMMCLP)
-  const ejecutado = formatMillones(devengadoMMCLP)
+  const hasBudgetData = presupuestoVigenteMMCLP !== null && devengadoMMCLP !== null && pctEjecucion !== null
 
-  let texto = `Con los últimos datos publicados (${mesCorte}), el ${nombreServicio} — la red regional de salud a la que pertenece ${nombreEstablecimiento} — recibió un presupuesto de ${ppto} y ejecutó el ${pctEjecucion.toFixed(1)}% (${ejecutado}).`
+  let texto = hasBudgetData
+    ? `Con los últimos datos publicados (${mesCorte ?? 'sin corte informado'}), el ${nombreServicio} — la red regional de salud a la que pertenece ${nombreEstablecimiento} — recibió un presupuesto de ${formatMillones(presupuestoVigenteMMCLP)} y ejecutó el ${pctEjecucion.toFixed(1)}% (${formatMillones(devengadoMMCLP)}).`
+    : `Para ${nombreServicio} — la red regional de salud a la que pertenece ${nombreEstablecimiento} — no hay datos presupuestarios completos y trazables cargados para el período consultado.`
 
   if (esperaCirugia !== null && esperaConsulta !== null && fechaCorteMinsal) {
     texto += ` En ese mismo período, la lista de espera registrada en ${nombreEstablecimiento} fue de ${formatNumero(esperaCirugia)} personas aguardando una cirugía y ${formatNumero(esperaConsulta)} esperando una consulta de especialidad`

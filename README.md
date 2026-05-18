@@ -33,13 +33,14 @@ En Chile, ~15 millones de personas dependen de la salud pública. La ejecución 
 - **Framework**: Next.js 16 con App Router y Turbopack
 - **Lenguaje**: TypeScript
 - **Estilos**: Tailwind CSS
+- **Package manager**: npm (`package-lock.json`)
 - **Datos**: JSON estático pre-ingresado (sin base de datos)
 - **Deploy**: Vercel (free tier)
 
 ## Estructura del Repositorio
 
 ```
-salud-transparente-chile/
+salud-clara/
 ├── data/
 │   ├── mapping.json           ← TABLA MAESTRA: commune/hospital → Servicio de Salud
 │   ├── dipres_ejecucion.json  ← Presupuesto por Servicio de Salud (DIPRES)
@@ -50,10 +51,12 @@ salud-transparente-chile/
 ├── src/
 │   ├── app/
 │   │   ├── api/search/        ← API de búsqueda
-│   │   ├── api/heroes/        ← Demos verificadas
+│   │   ├── api/heroes/        ← Ejemplos de búsqueda
+│   │   ├── api/chat/          ← Asistente conversacional
 │   │   └── page.tsx           ← Página principal
 │   ├── components/
-│   │   └── SearchClient.tsx   ← UI interactiva
+│   │   ├── SearchClient.tsx   ← UI interactiva
+│   │   └── ChatAssistant.tsx  ← Asistente de consulta
 │   └── lib/
 │       ├── types.ts           ← Tipos TypeScript
 │       ├── search.ts          ← Motor de búsqueda
@@ -72,7 +75,7 @@ nombre de hospital / comuna → Servicio de Salud (para datos DIPRES)
 nombre de hospital          → ID establecimiento (para datos MINSAL)
 ```
 
-### Servicios de Salud incluidos (29 servicios)
+### Servicios de Salud incluidos (28 servicios)
 
 | ID | Nombre | Región |
 |---|---|---|
@@ -105,9 +108,9 @@ nombre de hospital          → ID establecimiento (para datos MINSAL)
 | ss_tarapaca | Servicio de Salud Tarapacá | Tarapacá |
 | ss_arica_parinacota | Servicio de Salud Arica y Parinacota | Arica y Parinacota |
 
-### Demos Héroe Verificadas
+### Ejemplos de Búsqueda
 
-Estas tres búsquedas tienen datos verificados y garantizados para la demo en vivo:
+Estas tres búsquedas existen en el mapeo inicial y sirven para probar la experiencia:
 
 | Búsqueda | Servicio de Salud | Hospital Principal |
 |---|---|---|
@@ -138,8 +141,8 @@ Estas tres búsquedas tienen datos verificados y garantizados para la demo en vi
 
 ```bash
 # Clonar el repositorio
-git clone https://github.com/tu-usuario/salud-transparente-chile
-cd salud-transparente-chile
+git clone https://github.com/YhonaPeguero/salud-clara.git
+cd salud-clara
 
 # Instalar dependencias
 npm install
@@ -152,6 +155,8 @@ npm run build
 ```
 
 ## Actualizar Datos
+
+Regla de integridad: cada cifra en `data/` debe venir de una fuente oficial trazable o quedar como `null`. Todo dato real/null debe documentarse en `data/_data_audit.md`.
 
 ```bash
 # Instalar dependencias Python (solo para scripts de ingesta)
@@ -180,7 +185,7 @@ git push
 
 ## Deploy en Vercel
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Ftu-usuario%2Fsalud-transparente-chile)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FYhonaPeguero%2Fsalud-clara)
 
 ```bash
 # O usando Vercel CLI

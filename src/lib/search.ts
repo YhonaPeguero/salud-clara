@@ -6,7 +6,7 @@ import { generarParrafo } from './format'
 
 const mapping = mappingRaw as { entries: MappingEntry[] }
 const dipres = dipresRaw as { servicios: Record<string, DipresServicio>; mes_corte: string }
-const minsal = minsalRaw as { establecimientos: Record<string, MinsalEstablecimiento>; fecha_corte: string }
+const minsal = minsalRaw as { establecimientos: Record<string, MinsalEstablecimiento>; fecha_corte: string | null }
 
 function normalize(str: string): string {
   return str

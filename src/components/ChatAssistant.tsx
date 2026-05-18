@@ -1,15 +1,34 @@
 'use client'
 
 import { useChat } from '@ai-sdk/react'
-import { useState, useRef, useEffect } from 'react'
+import { DefaultChatTransport, type UIMessage } from 'ai'
+import { useState, useRef, useEffect, type FormEvent } from 'react'
+
+const chatTransport = new DefaultChatTransport({ api: '/api/chat' })
+
+const suggestedQuestions = [
+  '¿Qué hospital tiene más lista de espera?',
+  '¿Qué servicio tiene mejor ejecución?',
+  'Explica qué es el presupuesto vigente',
+]
+
+function getMessageText(message: UIMessage): string {
+  return message.parts
+    .filter(part => part.type === 'text')
+    .map(part => part.text)
+    .join('')
+}
 
 export function ChatAssistant() {
   const [isOpen, setIsOpen] = useState(false)
+  const [input, setInput] = useState('')
   const messagesEndRef = useRef<HTMLDivElement>(null)
-  
-  const { messages, input = '', handleInputChange, handleSubmit, isLoading, setMessages } = useChat({
-    api: '/api/chat',
+
+  const { messages, sendMessage, status, setMessages, error, clearError } = useChat({
+    transport: chatTransport,
   })
+
+  const isLoading = status === 'submitted' || status === 'streaming'
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -19,34 +38,26 @@ export function ChatAssistant() {
     scrollToBottom()
   }, [messages])
 
-  const suggestedQuestions = [
-    'Cual hospital tiene mas lista de espera?',
-    'Que servicio tiene mejor ejecucion?',
-    'Explica que es el presupuesto vigente',
-  ]
+  const submitQuestion = async (question: string) => {
+    const value = question.trim()
+    if (!value || isLoading) return
 
-  const handleSuggestion = (question: string) => {
-    const fakeEvent = {
-      preventDefault: () => {},
-    } as React.FormEvent
-    
-    // Set input and submit
-    const inputElement = document.querySelector('input[name="chat-input"]') as HTMLInputElement
-    if (inputElement) {
-      inputElement.value = question
-      const nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value')?.set
-      nativeInputValueSetter?.call(inputElement, question)
-      inputElement.dispatchEvent(new Event('input', { bubbles: true }))
+    clearError()
+    setInput('')
+    try {
+      await sendMessage({ text: value })
+    } catch {
+      // useChat exposes the error state for rendering.
     }
-    
-    // Small delay then submit
-    setTimeout(() => {
-      const form = document.querySelector('form[data-chat-form]') as HTMLFormElement
-      form?.requestSubmit()
-    }, 100)
+  }
+
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    void submitQuestion(input)
   }
 
   const clearChat = () => {
+    clearError()
     setMessages([])
   }
 
@@ -79,7 +90,7 @@ export function ChatAssistant() {
         <div className="flex items-center justify-between px-4 py-3 bg-[var(--color-surface-dark)] border-b border-gray-800">
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
-            <span className="text-sm font-medium text-white">Asistente de Salud</span>
+            <span className="text-sm font-medium text-white">Asistente de Salud Transparente Chile</span>
           </div>
           {messages.length > 0 && (
             <button
@@ -96,13 +107,13 @@ export function ChatAssistant() {
           {messages.length === 0 ? (
             <div className="space-y-3">
               <p className="text-sm text-gray-500 text-center">
-                Preguntame sobre hospitales, presupuestos o listas de espera
+                Pregúntame sobre hospitales, presupuestos o listas de espera
               </p>
               <div className="space-y-2">
                 {suggestedQuestions.map((q, i) => (
                   <button
                     key={i}
-                    onClick={() => handleSuggestion(q)}
+                    onClick={() => void submitQuestion(q)}
                     className="w-full text-left text-xs text-gray-600 bg-gray-50 hover:bg-gray-100 px-3 py-2 rounded-lg transition-colors"
                   >
                     {q}
@@ -123,10 +134,15 @@ export function ChatAssistant() {
                       : 'bg-gray-100 text-gray-800 rounded-bl-sm'
                   }`}
                 >
-                  {message.content}
+                  {getMessageText(message)}
                 </div>
               </div>
             ))
+          )}
+          {error && (
+            <div className="rounded-xl border border-red-100 bg-red-50 px-3 py-2 text-xs text-red-600">
+              No pudimos completar la respuesta. Verifica la configuración de `MINIMAX_API_KEY` o intenta de nuevo.
+            </div>
           )}
           {isLoading && (
             <div className="flex justify-start">
@@ -144,7 +160,7 @@ export function ChatAssistant() {
 
         {/* Input */}
         <form 
-          onSubmit={handleSubmit} 
+          onSubmit={handleSubmit}
           data-chat-form
           className="p-3 border-t border-gray-100"
         >
@@ -153,7 +169,7 @@ export function ChatAssistant() {
               name="chat-input"
               type="text"
               value={input}
-              onChange={handleInputChange}
+              onChange={event => setInput(event.target.value)}
               placeholder="Escribe tu pregunta..."
               className="flex-1 text-sm px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/50 focus:border-transparent"
               disabled={isLoading}

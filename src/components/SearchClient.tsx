@@ -20,7 +20,7 @@ function LiveIndicator() {
         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--color-success)] opacity-75" />
         <span className="relative inline-flex rounded-full h-2 w-2 bg-[var(--color-success)]" />
       </span>
-      <span className="text-xs font-medium text-[var(--color-success)]">Datos en vivo</span>
+      <span className="text-xs font-medium text-[var(--color-success)]">Datos públicos</span>
     </span>
   )
 }
@@ -39,71 +39,14 @@ function DataSourceBadge({ source, variant }: { source: string; variant: 'dipres
   )
 }
 
-function CircularProgress({ value, size = 80, strokeWidth = 6, color }: { value: number; size?: number; strokeWidth?: number; color: string }) {
-  const radius = (size - strokeWidth) / 2
-  const circumference = radius * 2 * Math.PI
-  const offset = circumference - (Math.min(value, 100) / 100) * circumference
-  
-  return (
-    <div className="relative inline-flex items-center justify-center" style={{ width: size, height: size }}>
-      <svg className="transform -rotate-90" width={size} height={size}>
-        <circle
-          cx={size / 2}
-          cy={size / 2}
-          r={radius}
-          fill="none"
-          stroke="var(--color-muted)"
-          strokeWidth={strokeWidth}
-        />
-        <circle
-          cx={size / 2}
-          cy={size / 2}
-          r={radius}
-          fill="none"
-          stroke={color}
-          strokeWidth={strokeWidth}
-          strokeDasharray={circumference}
-          strokeDashoffset={offset}
-          strokeLinecap="round"
-          className="transition-all duration-1000 ease-out"
-        />
-      </svg>
-      <div className="absolute inset-0 flex items-center justify-center">
-        <span className="text-lg font-bold text-[var(--color-foreground)]">{value.toFixed(0)}%</span>
-      </div>
-    </div>
-  )
-}
-
-function MetricCard({ label, value, subvalue, trend, icon }: { label: string; value: string; subvalue?: string; trend?: { value: number; positive: boolean }; icon: React.ReactNode }) {
-  return (
-    <div className="group relative bg-[var(--color-card)] rounded-2xl p-5 border border-[var(--color-border)] hover:border-[var(--color-primary)]/30 transition-all duration-300 hover:shadow-lg hover:shadow-[var(--color-primary)]/5">
-      <div className="flex items-start justify-between mb-3">
-        <div className="p-2.5 rounded-xl bg-[var(--color-muted)] group-hover:bg-[var(--color-primary)]/10 transition-colors">
-          {icon}
-        </div>
-        {trend && (
-          <div className={`flex items-center gap-1 text-xs font-semibold ${trend.positive ? 'text-[var(--color-danger)]' : 'text-[var(--color-success)]'}`}>
-            <svg className={`w-3 h-3 ${trend.positive ? '' : 'rotate-180'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-            </svg>
-            {formatVariacion(Math.abs(trend.value))}
-          </div>
-        )}
-      </div>
-      <p className="text-xs font-medium text-[var(--color-muted-foreground)] uppercase tracking-wide mb-1">{label}</p>
-      <p className="text-2xl font-bold text-[var(--color-foreground)] animate-count-up">{value}</p>
-      {subvalue && <p className="text-xs text-[var(--color-muted-foreground)] mt-1">{subvalue}</p>}
-    </div>
-  )
-}
-
-function BudgetBar({ assigned, executed, percentage }: { assigned: string; executed: string; percentage: number }) {
-  const getColor = (pct: number) => {
+function BudgetBar({ assigned, executed, percentage }: { assigned: string; executed: string; percentage: number | null }) {
+  const getColor = (pct: number | null) => {
+    if (pct === null) return 'var(--color-muted-foreground)'
     if (pct >= 90) return 'var(--color-success)'
     if (pct >= 70) return 'var(--color-warning)'
     return 'var(--color-danger)'
   }
+  const barPercentage = percentage === null ? 0 : Math.min(percentage, 100)
   
   return (
     <div className="space-y-4">
@@ -122,7 +65,7 @@ function BudgetBar({ assigned, executed, percentage }: { assigned: string; execu
         <div className="h-3 bg-[var(--color-muted)] rounded-full overflow-hidden">
           <div
             className="h-full rounded-full transition-all duration-1000 ease-out relative overflow-hidden"
-            style={{ width: `${Math.min(percentage, 100)}%`, backgroundColor: getColor(percentage) }}
+            style={{ width: `${barPercentage}%`, backgroundColor: getColor(percentage) }}
           >
             <div className="absolute inset-0 animate-shimmer" />
           </div>
@@ -136,7 +79,7 @@ function BudgetBar({ assigned, executed, percentage }: { assigned: string; execu
       <div className="flex items-center justify-between text-xs">
         <span className="text-[var(--color-muted-foreground)]">0%</span>
         <span className="font-semibold px-2 py-0.5 rounded-full" style={{ backgroundColor: `${getColor(percentage)}20`, color: getColor(percentage) }}>
-          {percentage.toFixed(1)}% ejecutado
+          {percentage === null ? 'Sin dato de ejecución' : `${percentage.toFixed(1)}% ejecutado`}
         </span>
         <span className="text-[var(--color-muted-foreground)]">100%</span>
       </div>
@@ -144,7 +87,16 @@ function BudgetBar({ assigned, executed, percentage }: { assigned: string; execu
   )
 }
 
-function WaitlistMeter({ count, label, trend }: { count: number; label: string; trend: number | null }) {
+function WaitlistMeter({ count, label, trend }: { count: number | null; label: string; trend: number | null }) {
+  if (count === null) {
+    return (
+      <div className="rounded-2xl bg-[var(--color-muted)] p-4">
+        <span className="text-xs font-medium text-[var(--color-muted-foreground)] uppercase tracking-wide">{label}</span>
+        <p className="mt-2 text-sm text-[var(--color-muted-foreground)]">Sin dato trazable cargado.</p>
+      </div>
+    )
+  }
+
   const maxCount = 10000
   const percentage = Math.min((count / maxCount) * 100, 100)
   
@@ -154,7 +106,7 @@ function WaitlistMeter({ count, label, trend }: { count: number; label: string; 
         <span className="text-xs font-medium text-[var(--color-muted-foreground)] uppercase tracking-wide">{label}</span>
         {trend !== null && (
           <span className={`text-xs font-semibold ${trend >= 0 ? 'text-[var(--color-danger)]' : 'text-[var(--color-success)]'}`}>
-            {trend >= 0 ? '+' : ''}{formatVariacion(trend)} vs. anterior
+            {formatVariacion(trend)} vs. anterior
           </span>
         )}
       </div>
@@ -219,7 +171,7 @@ function ResultCard({ result }: { result: SearchResult }) {
           </div>
           {entry.es_hero && (
             <span className="shrink-0 bg-[var(--color-primary)] text-white text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full">
-              Verificado
+              Ejemplo
             </span>
           )}
         </div>
@@ -233,7 +185,7 @@ function ResultCard({ result }: { result: SearchResult }) {
       <section className="px-6 py-6 border-b border-[var(--color-border)]">
         <div className="flex items-center justify-between mb-5">
           <DataSourceBadge source="DIPRES" variant="dipres" />
-          <span className="text-[10px] text-[var(--color-muted-foreground)]">Actualizado: {dipres.mes_corte}</span>
+          <span className="text-[10px] text-[var(--color-muted-foreground)]">Corte: {dipres.mes_corte ?? 'sin dato'}</span>
         </div>
         
         <p className="text-sm text-[var(--color-muted-foreground)] mb-5 font-medium">
@@ -252,7 +204,7 @@ function ResultCard({ result }: { result: SearchResult }) {
         <div className="flex items-center justify-between mb-5">
           <DataSourceBadge source="MINSAL" variant="minsal" />
           {minsal && (
-            <span className="text-[10px] text-[var(--color-muted-foreground)]">Actualizado: {minsal.fecha_corte}</span>
+            <span className="text-[10px] text-[var(--color-muted-foreground)]">Corte: {minsal.fecha_corte ?? 'sin dato'}</span>
           )}
         </div>
         
@@ -260,12 +212,12 @@ function ResultCard({ result }: { result: SearchResult }) {
           <div className="space-y-6">
             <WaitlistMeter 
               count={minsal.espera_cirugia} 
-              label="Esperando Cirugia"
+              label="Esperando cirugía"
               trend={minsal.variacion_cirugia_pct}
             />
             <WaitlistMeter 
               count={minsal.espera_consulta_especialidad} 
-              label="Esperando Especialidad"
+              label="Esperando especialidad"
               trend={minsal.variacion_consulta_pct}
             />
           </div>
@@ -422,9 +374,9 @@ function StatsBar() {
   return (
     <div className="flex items-center justify-center gap-6 mt-6">
       {[
-        { value: '29', label: 'Servicios' },
-        { value: '200+', label: 'Hospitales' },
-        { value: '2024', label: 'Actualizado' },
+        { value: 'DIPRES', label: 'Presupuesto' },
+        { value: 'MINSAL', label: 'Espera' },
+        { value: '2024', label: 'Período' },
       ].map(({ value, label }, i) => (
         <div key={label} className="flex items-center gap-2">
           {i > 0 && <span className="w-1 h-1 rounded-full bg-white/20" />}
@@ -459,12 +411,12 @@ export function SearchClient({ initialHeroes }: Props) {
     setError(null)
     try {
       const res = await fetch(`/api/search?q=${encodeURIComponent(q.trim())}`)
-      if (!res.ok) throw new Error('Error en la busqueda')
+      if (!res.ok) throw new Error('Error en la búsqueda')
       const data = await res.json()
       setResults(data.results ?? [])
       setSearched(true)
     } catch {
-      setError('No pudimos completar la busqueda. Por favor intenta de nuevo.')
+      setError('No pudimos completar la búsqueda. Por favor intenta de nuevo.')
       setResults([])
     } finally {
       setLoading(false)
@@ -546,7 +498,7 @@ export function SearchClient({ initialHeroes }: Props) {
                   />
                 </svg>
               </div>
-              <span className="text-base font-semibold text-white">Salud Transparente</span>
+              <span className="text-base font-semibold text-white">Salud Transparente Chile</span>
             </div>
             <LiveIndicator />
           </nav>
@@ -651,7 +603,7 @@ export function SearchClient({ initialHeroes }: Props) {
             <div className="flex items-center gap-4 mb-8">
               <div className="h-px flex-1 bg-[var(--color-border)]" />
               <p className="text-xs font-bold uppercase tracking-widest text-[var(--color-muted-foreground)]">
-                Ejemplos Verificados
+                Ejemplos de búsqueda
               </p>
               <div className="h-px flex-1 bg-[var(--color-border)]" />
             </div>
@@ -671,7 +623,7 @@ export function SearchClient({ initialHeroes }: Props) {
                 <path d="M12 2L3 6v6c0 5.5 3.8 10.2 9 12 5.2-1.8 9-6.5 9-12V6l-9-4z" fill="var(--color-primary)" fillOpacity="0.15" stroke="var(--color-primary)" strokeWidth="1.2"/>
                 <path d="M5 12h3.5l1.5-3 2 6 1.5-3H17" stroke="var(--color-primary)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
-              <span className="text-sm font-medium text-[var(--color-foreground)]">Salud Transparente</span>
+              <span className="text-sm font-medium text-[var(--color-foreground)]">Salud Transparente Chile</span>
             </div>
             <p className="text-[11px] text-[var(--color-muted-foreground)] max-w-sm mx-auto">
               Datos de DIPRES y MINSAL. El presupuesto corresponde al Servicio de Salud regional.
@@ -684,7 +636,7 @@ export function SearchClient({ initialHeroes }: Props) {
               <a href="https://github.com/YhonaPeguero/salud-clara" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--color-foreground)] transition-colors">GitHub</a>
             </div>
             <p className="text-[10px] text-[var(--color-muted-foreground)]/60">
-              Hack@LATAM 2025
+              Hack@LATAM 2026
             </p>
           </div>
         </footer>
