@@ -30,6 +30,12 @@ export interface MinsalEstablecimiento {
   es_hero: boolean
 }
 
+export interface MinsalHistoricoPunto {
+  trimestre: string
+  espera_cirugia: number | null
+  espera_consulta_especialidad: number | null
+}
+
 export interface MinsalServicio {
   nombre_servicio: string
   espera_cirugia: number | null
@@ -37,6 +43,7 @@ export interface MinsalServicio {
   variacion_cirugia_pct: number | null
   variacion_consulta_pct: number | null
   fecha_corte: string | null
+  historico?: MinsalHistoricoPunto[]
   url_fuente_real?: string | null
   nota?: string
 }

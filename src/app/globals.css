@@ -2,6 +2,7 @@
 
 @theme inline {
   --font-sans: 'Geist', 'Geist Fallback', system-ui, sans-serif;
+  --font-display: var(--font-playfair), 'Playfair Display', Georgia, serif;
   
   /* Core palette - Healthcare trust with modern edge */
   --color-background: #FAFBFC;
@@ -61,6 +62,10 @@
 
 * {
   border-color: var(--color-border);
+}
+
+html, body {
+  overflow-x: hidden;
 }
 
 body {
@@ -147,6 +152,51 @@ body {
   background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.4) 50%, transparent 100%);
   background-size: 200% 100%;
   animation: shimmer 2s infinite;
+}
+
+@keyframes stagger-up {
+  0%   { opacity: 0; transform: translateY(12px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+/* Baseline visible: si el animation no corre, el contenido queda legible. */
+.animate-stagger {
+  animation: stagger-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Respetar reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  .animate-stagger,
+  .sparkline-path,
+  .animated-gradient-text {
+    animation: none !important;
+  }
+}
+
+@keyframes draw-line {
+  from { stroke-dashoffset: 1000; }
+  to   { stroke-dashoffset: 0; }
+}
+
+.sparkline-path {
+  stroke-dasharray: 1000;
+  stroke-dashoffset: 1000;
+  animation: draw-line 1.2s ease-out 0.3s forwards;
+}
+
+@keyframes gradient-shift {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.animated-gradient-text {
+  background: linear-gradient(120deg, #14B8A6, #F97316, #14B8A6);
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: gradient-shift 6s ease infinite;
 }
 
 /* Glass morphism effect */

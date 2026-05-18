@@ -1,10 +1,28 @@
 export function formatMillones(mm: number | null | undefined): string {
   if (mm === null || mm === undefined) return 'Sin dato'
+  // mm está en MILLONES de pesos. 1 billón (CLP, escala larga) = 1.000.000 millones.
+  if (mm >= 1_000_000) {
+    const bill = mm / 1_000_000
+    return `$${bill.toLocaleString('es-CL', { minimumFractionDigits: 1, maximumFractionDigits: 2 })} billones`
+  }
   if (mm >= 1000) {
-    const billones = mm / 1000
-    return `$${billones.toLocaleString('es-CL', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} mil millones`
+    const milMM = mm / 1000
+    return `$${milMM.toLocaleString('es-CL', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} mil millones`
   }
   return `$${mm.toLocaleString('es-CL')} millones`
+}
+
+// Versión ultra-compacta para hero stats / chips, donde el ancho es limitado.
+// Usa abreviaturas: "MM" = millones, "MMM" = miles de millones, "B" = billones.
+export function formatMillonesCompact(mm: number | null | undefined): string {
+  if (mm === null || mm === undefined) return '—'
+  if (mm >= 1_000_000) {
+    return `$${(mm / 1_000_000).toLocaleString('es-CL', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} B`
+  }
+  if (mm >= 1000) {
+    return `$${(mm / 1000).toLocaleString('es-CL', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} MMM`
+  }
+  return `$${mm.toLocaleString('es-CL')} MM`
 }
 
 export function formatVariacion(pct: number | null): string {

@@ -20,6 +20,42 @@ export function getMinsalPeriodo(): string | null {
   return minsal.fecha_corte ?? null
 }
 
+export interface NationalStats {
+  totalPresupuestoVigenteMM: number
+  totalDevengadoMM: number
+  pctEjecucionNacional: number | null
+  totalEsperaCirugia: number
+  totalEsperaConsulta: number
+  serviciosCount: number
+  serviciosConDatoMinsal: number
+}
+
+export function getNationalStats(): NationalStats {
+  let totalVigente = 0
+  let totalDevengado = 0
+  for (const s of Object.values(dipres.servicios)) {
+    if (s.presupuesto_vigente_MM != null) totalVigente += s.presupuesto_vigente_MM
+    if (s.devengado_MM != null) totalDevengado += s.devengado_MM
+  }
+  let totalCirugia = 0
+  let totalConsulta = 0
+  let conDato = 0
+  for (const s of Object.values(minsal.servicios)) {
+    if (s.espera_cirugia != null) totalCirugia += s.espera_cirugia
+    if (s.espera_consulta_especialidad != null) totalConsulta += s.espera_consulta_especialidad
+    if (s.espera_cirugia != null || s.espera_consulta_especialidad != null) conDato++
+  }
+  return {
+    totalPresupuestoVigenteMM: totalVigente,
+    totalDevengadoMM: totalDevengado,
+    pctEjecucionNacional: totalVigente > 0 ? (totalDevengado / totalVigente) * 100 : null,
+    totalEsperaCirugia: totalCirugia,
+    totalEsperaConsulta: totalConsulta,
+    serviciosCount: Object.keys(dipres.servicios).length,
+    serviciosConDatoMinsal: conDato,
+  }
+}
+
 function normalize(str: string): string {
   return str
     .toLowerCase()

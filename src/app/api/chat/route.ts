@@ -76,7 +76,7 @@ function buildDataContext() {
 }
 
 function buildSystemPrompt() {
-  return `Eres el asistente de "Salud Transparente Chile", una aplicación que muestra datos públicos de salud de Chile.
+  return `Eres el asistente de "K-milla", una aplicación que conecta los datos públicos de presupuesto (DIPRES) y listas de espera (MINSAL) de salud en Chile, por Servicio de Salud.
 
 DATOS DISPONIBLES:
 ${buildDataContext()}

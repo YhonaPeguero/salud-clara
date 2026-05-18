@@ -1,12 +1,15 @@
 {
-  "name": "salud-transparente-chile",
+  "name": "k-milla",
   "version": "0.1.0",
   "private": true,
   "packageManager": "npm@11.4.2",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "ingest:dipres": "node scripts/ingest_dipres.mjs",
+    "ingest:minsal": "node scripts/ingest_minsal.mjs",
+    "ingest": "npm run ingest:dipres && npm run ingest:minsal"
   },
   "dependencies": {
     "@ai-sdk/openai-compatible": "^2.0.47",
