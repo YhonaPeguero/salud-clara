@@ -1,5 +1,7 @@
 # Salud Transparente Chile
 
+> Repo histórico: `salud-clara`. Nombre del paquete actual en `package.json`: `salud-transparente-chile`.
+
 **¿Llegó la plata a tu hospital?**
 
 Conecta el presupuesto público de salud (DIPRES) con las listas de espera de tu hospital (MINSAL). Una sola búsqueda. Datos públicos. Lenguaje humano.
@@ -130,7 +132,7 @@ Estas tres búsquedas existen en el mapeo inicial y sirven para probar la experi
 - **Frecuencia**: Mensual, con corte a fin de mes
 
 ### MINSAL - Visor Ciudadano
-- **URL**: https://visortiemposespera.minsal.cl/
+- **URL**: https://www.listaesperasalud.cl/
 - **Qué publica**: Listas de espera por establecimiento (consultas y cirugías)
 - **Unidad**: Hospital / Establecimiento
 - **Frecuencia**: Mensual
@@ -153,6 +155,14 @@ npm run dev
 # Build de producción
 npm run build
 ```
+
+## Variables de entorno
+
+| Variable | Dónde | Necesaria para | Si falta |
+|---|---|---|---|
+| `MINIMAX_API_KEY` | Solo servidor (Vercel → Project Settings → Environment Variables) | Asistente conversacional (`/api/chat`) | La API responde 503 y el chat muestra un mensaje informativo. El buscador y los datos siguen funcionando. |
+
+La key vive exclusivamente en el servidor (`src/app/api/chat/route.ts`). Nunca se expone al cliente. No se commitea ningún archivo `.env*`.
 
 ## Actualizar Datos
 

@@ -7,8 +7,8 @@ import { useState, useRef, useEffect, type FormEvent } from 'react'
 const chatTransport = new DefaultChatTransport({ api: '/api/chat' })
 
 const suggestedQuestions = [
-  '¿Qué hospital tiene más lista de espera?',
-  '¿Qué servicio tiene mejor ejecución?',
+  '¿Cuánto presupuesto recibió el Servicio Metropolitano Norte?',
+  '¿Qué Servicio de Salud ejecutó casi todo su presupuesto en 2024?',
   'Explica qué es el presupuesto vigente',
 ]
 

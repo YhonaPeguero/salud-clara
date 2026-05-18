@@ -23,11 +23,12 @@ type DipresServicio = {
   mes_corte?: string | null
 }
 
-type MinsalEstablecimiento = {
-  nombre?: string | null
-  servicio_salud_id?: string | null
+type MinsalServicio = {
+  nombre_servicio?: string | null
   espera_cirugia?: number | null
   espera_consulta_especialidad?: number | null
+  variacion_cirugia_pct?: number | null
+  variacion_consulta_pct?: number | null
   fecha_corte?: string | null
 }
 
@@ -35,15 +36,13 @@ type MinsalEstablecimiento = {
 function buildDataContext() {
   const mappingEntries = (mappingData as { entries: MappingEntry[] }).entries
   const serviciosDipres = (dipresData as { servicios: Record<string, DipresServicio | null> }).servicios
-  const establecimientosMinsal = (minsalData as {
-    establecimientos: Record<string, MinsalEstablecimiento | null>
-  }).establecimientos
+  const serviciosMinsal = (minsalData as {
+    servicios: Record<string, MinsalServicio | null>
+  }).servicios
 
   const servicios = Object.entries(serviciosDipres).map(([servicioId, presupuesto]) => {
     const entradasServicio = mappingEntries.filter(entry => entry.servicio_salud_id === servicioId)
-    const esperaServicio = Object.values(establecimientosMinsal).filter(
-      establecimiento => establecimiento?.servicio_salud_id === servicioId
-    )
+    const espera = serviciosMinsal?.[servicioId] ?? null
 
     return {
       servicio_id: servicioId,
@@ -61,12 +60,15 @@ function buildDataContext() {
         .filter(entry => entry.tipo !== 'comuna')
         .slice(0, 5)
         .map(entry => entry.display_nombre),
-      listas_espera: esperaServicio.slice(0, 5).map(establecimiento => ({
-        establecimiento: establecimiento?.nombre ?? null,
-        espera_cirugia: establecimiento?.espera_cirugia ?? null,
-        espera_consulta_especialidad: establecimiento?.espera_consulta_especialidad ?? null,
-        fecha_corte: establecimiento?.fecha_corte ?? null,
-      })),
+      lista_espera_servicio: espera
+        ? {
+            espera_cirugia: espera.espera_cirugia ?? null,
+            espera_consulta_especialidad: espera.espera_consulta_especialidad ?? null,
+            variacion_cirugia_pct: espera.variacion_cirugia_pct ?? null,
+            variacion_consulta_pct: espera.variacion_consulta_pct ?? null,
+            fecha_corte: espera.fecha_corte ?? null,
+          }
+        : null,
     }
   })
 
@@ -89,7 +91,7 @@ INSTRUCCIONES:
   - "Presupuesto vigente" = plata asignada para el año
   - "Gasto devengado" = plata ya gastada
   - "Porcentaje de ejecución" = qué % del presupuesto se ha usado
-  - "Lista de espera" = personas esperando atención
+  - "Lista de espera" = personas esperando atención (la cifra es por Servicio de Salud completo, no por hospital individual)
 - Sé empático, estos datos afectan la vida de las personas
 - Si no tienes el dato, dilo honestamente
 - Respuestas cortas y útiles, máximo 3-4 oraciones

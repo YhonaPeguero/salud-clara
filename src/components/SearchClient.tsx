@@ -7,6 +7,8 @@ import { ChatAssistant } from './ChatAssistant'
 
 interface Props {
   initialHeroes: SearchResult[]
+  dipresPeriodo: string | null
+  minsalPeriodo: string | null
 }
 
 // ============================================
@@ -141,9 +143,9 @@ function WaitlistMeter({ count, label, trend }: { count: number | null; label: s
 // ============================================
 
 function ResultCard({ result }: { result: SearchResult }) {
-  const { entry, dipres, minsal } = result
+  const { entry, dipres, establecimiento, minsal } = result
   const esComuna = entry.tipo === 'comuna'
-  const hospitalNombre = minsal?.nombre ?? entry.display_nombre
+  const hospitalNombre = establecimiento?.nombre ?? entry.display_nombre
 
   return (
     <article className="animate-fade-up bg-[var(--color-card)] rounded-3xl shadow-xl shadow-[var(--color-foreground)]/5 overflow-hidden border border-[var(--color-border)]">
@@ -207,19 +209,26 @@ function ResultCard({ result }: { result: SearchResult }) {
             <span className="text-[10px] text-[var(--color-muted-foreground)]">Corte: {minsal.fecha_corte ?? 'sin dato'}</span>
           )}
         </div>
-        
+
+        <p className="text-sm text-[var(--color-muted-foreground)] mb-5 font-medium">
+          Lista de espera de toda la red: {dipres.nombre}
+        </p>
+
         {minsal ? (
           <div className="space-y-6">
-            <WaitlistMeter 
-              count={minsal.espera_cirugia} 
+            <WaitlistMeter
+              count={minsal.espera_cirugia}
               label="Esperando cirugía"
               trend={minsal.variacion_cirugia_pct}
             />
-            <WaitlistMeter 
-              count={minsal.espera_consulta_especialidad} 
+            <WaitlistMeter
+              count={minsal.espera_consulta_especialidad}
               label="Esperando especialidad"
               trend={minsal.variacion_consulta_pct}
             />
+            <p className="text-[10px] text-[var(--color-muted-foreground)] leading-relaxed">
+              Cifra agregada del Servicio de Salud (unidad oficial MINSAL), no del hospital específico. Variación vs. mismo trimestre del año anterior.
+            </p>
           </div>
         ) : (
           <div className="bg-[var(--color-muted)] rounded-2xl p-5 text-center">
@@ -227,7 +236,7 @@ function ResultCard({ result }: { result: SearchResult }) {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2z" />
             </svg>
             <p className="text-sm text-[var(--color-muted-foreground)]">
-              No hay datos de lista de espera disponibles para este establecimiento.
+              No hay datos de lista de espera cargados para este Servicio de Salud.
             </p>
           </div>
         )}
@@ -251,14 +260,14 @@ function ResultCard({ result }: { result: SearchResult }) {
       {/* Footer */}
       <footer className="px-6 py-4 bg-[var(--color-card)] border-t border-[var(--color-border)]">
         <div className="flex flex-wrap items-center justify-center gap-4 text-[10px] text-[var(--color-muted-foreground)]">
-          <a href="https://www.dipres.gob.cl/597/w3-propertyvalue-15131.html" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--color-primary)] transition-colors flex items-center gap-1">
+          <a href="https://www.dipres.gob.cl/" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--color-primary)] transition-colors flex items-center gap-1">
             <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
             </svg>
             DIPRES
           </a>
           <span className="text-[var(--color-border)]">|</span>
-          <a href="https://visortiemposespera.minsal.cl/" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--color-accent)] transition-colors flex items-center gap-1">
+          <a href="https://www.listaesperasalud.cl/" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--color-accent)] transition-colors flex items-center gap-1">
             <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
             </svg>
@@ -370,15 +379,15 @@ function QuickSearchTags({ onSelect }: { onSelect: (term: string) => void }) {
 // STATS BAR
 // ============================================
 
-function StatsBar() {
+function StatsBar({ dipresPeriodo, minsalPeriodo }: { dipresPeriodo: string | null; minsalPeriodo: string | null }) {
+  const items = [
+    { value: 'DIPRES', label: dipresPeriodo ?? 'Sin corte' },
+    { value: 'MINSAL', label: minsalPeriodo ?? 'Sin corte cargado' },
+  ]
   return (
     <div className="flex items-center justify-center gap-6 mt-6">
-      {[
-        { value: 'DIPRES', label: 'Presupuesto' },
-        { value: 'MINSAL', label: 'Espera' },
-        { value: '2024', label: 'Período' },
-      ].map(({ value, label }, i) => (
-        <div key={label} className="flex items-center gap-2">
+      {items.map(({ value, label }, i) => (
+        <div key={value} className="flex items-center gap-2">
           {i > 0 && <span className="w-1 h-1 rounded-full bg-white/20" />}
           <span className="text-sm font-semibold text-white">{value}</span>
           <span className="text-xs text-white/40">{label}</span>
@@ -392,7 +401,7 @@ function StatsBar() {
 // MAIN COMPONENT
 // ============================================
 
-export function SearchClient({ initialHeroes }: Props) {
+export function SearchClient({ initialHeroes, dipresPeriodo, minsalPeriodo }: Props) {
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<SearchResult[]>([])
   const [loading, setLoading] = useState(false)
@@ -525,7 +534,7 @@ export function SearchClient({ initialHeroes }: Props) {
           
           <QuickSearchTags onSelect={handleHeroClick} />
           
-          <StatsBar />
+          <StatsBar dipresPeriodo={dipresPeriodo} minsalPeriodo={minsalPeriodo} />
         </div>
         
         {/* Bottom fade */}
@@ -631,7 +640,7 @@ export function SearchClient({ initialHeroes }: Props) {
             <div className="flex items-center justify-center gap-3 text-[11px] text-[var(--color-muted-foreground)]">
               <a href="https://www.dipres.gob.cl" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--color-primary)] transition-colors">DIPRES</a>
               <span className="w-1 h-1 rounded-full bg-[var(--color-border)]" />
-              <a href="https://visortiemposespera.minsal.cl" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--color-accent)] transition-colors">MINSAL</a>
+              <a href="https://www.listaesperasalud.cl" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--color-accent)] transition-colors">MINSAL</a>
               <span className="w-1 h-1 rounded-full bg-[var(--color-border)]" />
               <a href="https://github.com/YhonaPeguero/salud-clara" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--color-foreground)] transition-colors">GitHub</a>
             </div>

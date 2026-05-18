@@ -27,19 +27,25 @@ export interface DipresServicio {
 export interface MinsalEstablecimiento {
   nombre: string
   servicio_salud_id: string
+  es_hero: boolean
+}
+
+export interface MinsalServicio {
+  nombre_servicio: string
   espera_cirugia: number | null
   espera_consulta_especialidad: number | null
   variacion_cirugia_pct: number | null
   variacion_consulta_pct: number | null
   fecha_corte: string | null
   url_fuente_real?: string | null
-  es_hero: boolean
+  nota?: string
 }
 
 export interface SearchResult {
   entry: MappingEntry
   dipres: DipresServicio
-  minsal: MinsalEstablecimiento | null
+  establecimiento: MinsalEstablecimiento | null
+  minsal: MinsalServicio | null
   parrafo: string
   score: number
 }

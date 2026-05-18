@@ -54,8 +54,8 @@ export function generarParrafo(params: {
     ? `Con los últimos datos publicados (${mesCorte ?? 'sin corte informado'}), el ${nombreServicio} — la red regional de salud a la que pertenece ${nombreEstablecimiento} — recibió un presupuesto de ${formatMillones(presupuestoVigenteMMCLP)} y ejecutó el ${pctEjecucion.toFixed(1)}% (${formatMillones(devengadoMMCLP)}).`
     : `Para ${nombreServicio} — la red regional de salud a la que pertenece ${nombreEstablecimiento} — no hay datos presupuestarios completos y trazables cargados para el período consultado.`
 
-  if (esperaCirugia !== null && esperaConsulta !== null && fechaCorteMinsal) {
-    texto += ` En ese mismo período, la lista de espera registrada en ${nombreEstablecimiento} fue de ${formatNumero(esperaCirugia)} personas aguardando una cirugía y ${formatNumero(esperaConsulta)} esperando una consulta de especialidad`
+  if ((esperaCirugia !== null || esperaConsulta !== null) && fechaCorteMinsal) {
+    texto += ` Al corte ${fechaCorteMinsal}, la lista de espera de toda la red del ${nombreServicio} (no solo ${nombreEstablecimiento}) era de ${esperaCirugia !== null ? `${formatNumero(esperaCirugia)} personas aguardando una cirugía` : 'cirugía sin dato'} y ${esperaConsulta !== null ? `${formatNumero(esperaConsulta)} esperando una consulta de especialidad` : 'consulta sin dato'}`
 
     const varTexto: string[] = []
     if (variacionCirugiaPct !== null) {
@@ -68,12 +68,12 @@ export function generarParrafo(params: {
     }
 
     if (varTexto.length > 0) {
-      texto += `, lo que representa ${varTexto.join(' y ')} respecto al año anterior`
+      texto += `, lo que representa ${varTexto.join(' y ')} respecto al mismo trimestre del año anterior`
     }
 
     texto += '.'
   } else {
-    texto += ` No se encontraron datos de lista de espera para ${nombreEstablecimiento} en el Visor MINSAL para este período.`
+    texto += ` No hay datos de lista de espera cargados para el ${nombreServicio} en este período.`
   }
 
   return texto

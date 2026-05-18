@@ -76,24 +76,82 @@ Campos DIPRES en `null`:
 
 ## MINSAL
 
-Fuente pública vigente verificada: https://app.powerbi.com/view?r=eyJrIjoiNmZjNTQ5NGQtYjlkZC00ODMyLWEzZTYtOTE2MzY0YmM4MDllIiwidCI6Ijc0NDRkNTdjLTA0YzgtNDJkZS1hMDgxLWRkODk5YWYyOTIyZSIsImMiOjR9
+Fuente principal verificada: https://www.listaesperasalud.cl/
 
-Resultado:
+El visor oficial de la Subsecretaría de Redes Asistenciales (`listaesperasalud.cl`) carga sus gráficos desde JSONs estáticos publicados en la misma página, uno por Servicio de Salud, accesibles públicamente sin autenticación.
 
-- Se descartó el dominio anterior `visortiemposespera.minsal.cl` porque no resuelve desde el entorno actual (`curl: (6) Could not resolve host`).
-- El visor público vigente de Power BI responde `200 text/html`, pero no expone en esta revisión un archivo descargable oficial con granularidad por establecimiento.
-- Se consultó `datos.gob.cl` con búsquedas `lista de espera minsal`, `lista espera salud`, `MINSAL espera`, `SIGTE`, `tiempos de espera salud` y `GES espera`.
-- No se encontró una fuente oficial pública descargable con datos por establecimiento para `espera_cirugia`, `espera_consulta_especialidad`, `variacion_cirugia_pct` y `variacion_consulta_pct`.
-- Los resultados relevantes de `datos.gob.cl` no correspondían a listas de espera por establecimiento; por ejemplo, `lista espera salud` devolvió solo `Atenciones de urgencia de la red pública de Salud`.
+Patrón de URL descubierto inspeccionando el código de `index.html` (script inline que llama a `fetch('data/data_SERVICIO_DE_SALUD_<NOMBRE_NORMALIZADO>.json')`):
 
-Campos MINSAL en `null` para los 41 establecimientos:
+```
+https://www.listaesperasalud.cl/data/data_SERVICIO_DE_SALUD_<NOMBRE_NORMALIZADO>.json
+```
 
-- `espera_cirugia`
-- `espera_consulta_especialidad`
-- `variacion_cirugia_pct`
-- `variacion_consulta_pct`
-- `fecha_corte`
-- `url_fuente_real`
+Donde `<NOMBRE_NORMALIZADO>` es el nombre del Servicio de Salud en mayúsculas, espacios → `_`, tildes y `Ñ` removidas (`Á→A, É→E, Í→I, Ó→O, Ú→U, Ñ→N`).
+
+Esta fuente sí cumple la regla #2 de CLAUDE.md (unidad = Servicio de Salud) y se descartaron el dominio antiguo `visortiemposespera.minsal.cl` (no resuelve) y el visor PBI embebido (`app.powerbi.com/view?r=...`) por no exponer descarga oficial parseable.
+
+Método aplicado a los 28 Servicios de Salud:
+
+- Se descargó el JSON de cada SS.
+- Cada JSON contiene una serie histórica trimestral desde `MARZO 2019` hasta `JUNIO 2025` (26 trimestres).
+- Se tomó la fila del último trimestre como cifras vigentes.
+- `espera_cirugia` = `quirurgica_pacientes` del último trimestre.
+- `espera_consulta_especialidad` = `consulta_pacientes` del último trimestre.
+- `variacion_cirugia_pct` = variación interanual contra el mismo trimestre del año anterior (`JUNIO 2024`), calculada como `(actual − previo) / previo × 100`, redondeada a 2 decimales.
+- `variacion_consulta_pct` = lo mismo para consultas de especialidad. **En los 28 SS este valor queda `null` porque la fuente entrega `consulta_pacientes = null` en el trimestre comparativo JUNIO 2024**, motivo por el cual no es posible calcular variación honesta. La cifra absoluta sí está disponible.
+- `fecha_corte` = `"JUNIO 2025"` en los 28 (coincide en la raíz del archivo).
+
+Reproducción usada:
+
+```bash
+node -e "(async()=>{
+  const services = ['METROPOLITANO_NORTE','METROPOLITANO_OCCIDENTE','METROPOLITANO_CENTRAL','METROPOLITANO_ORIENTE','METROPOLITANO_SUR','METROPOLITANO_SUR_ORIENTE','VALPARAISO-SAN_ANTONIO','VINA_DEL_MAR-QUILLOTA','ACONCAGUA','O’HIGGINS','DEL_MAULE','NUBLE','BIOBIO','TALCAHUANO','ARAUCO','ARAUCANIA_NORTE','ARAUCANIA_SUR','LOS_RIOS','OSORNO','DEL_RELONCAVI','CHILOE','AYSEN','MAGALLANES','COQUIMBO','ATACAMA','ANTOFAGASTA','TARAPACA','ARICA_Y_PARINACOTA'];
+  for (const n of services){
+    const url='https://www.listaesperasalud.cl/data/data_SERVICIO_DE_SALUD_'+n+'.json';
+    const arr=await (await fetch(url)).json();
+    const last=arr[arr.length-1], yoy=arr[arr.length-5];
+    console.log(n, last.trimestre, 'qpac=', last.quirurgica_pacientes, 'cpac=', last.consulta_pacientes, '|YoY', yoy.trimestre, yoy.quirurgica_pacientes, yoy.consulta_pacientes);
+  }
+})()"
+```
+
+Valores extraídos y escritos (filas raw de la fuente):
+
+| key | url | fecha_corte | last_quirurgica_pacientes | last_consulta_pacientes | yoy_trimestre | yoy_quirurgica_pacientes | yoy_consulta_pacientes |
+|---|---|---|---:|---:|---|---:|---:|
+| ss_arica_parinacota | https://www.listaesperasalud.cl/data/data_SERVICIO_DE_SALUD_ARICA_Y_PARINACOTA.json | JUNIO 2025 | 5457 | 35384 | JUNIO 2024 | 4376 | null |
+| ss_tarapaca | https://www.listaesperasalud.cl/data/data_SERVICIO_DE_SALUD_TARAPACA.json | JUNIO 2025 | 5799 | 49785 | JUNIO 2024 | 5805 | null |
+| ss_antofagasta | https://www.listaesperasalud.cl/data/data_SERVICIO_DE_SALUD_ANTOFAGASTA.json | JUNIO 2025 | 6598 | 72818 | JUNIO 2024 | 7693 | null |
+| ss_atacama | https://www.listaesperasalud.cl/data/data_SERVICIO_DE_SALUD_ATACAMA.json | JUNIO 2025 | 5700 | 35461 | JUNIO 2024 | 4386 | null |
+| ss_coquimbo | https://www.listaesperasalud.cl/data/data_SERVICIO_DE_SALUD_COQUIMBO.json | JUNIO 2025 | 20304 | 119096 | JUNIO 2024 | 14453 | null |
+| ss_valparaiso_sa | https://www.listaesperasalud.cl/data/data_SERVICIO_DE_SALUD_VALPARAISO-SAN_ANTONIO.json | JUNIO 2025 | 13028 | 56631 | JUNIO 2024 | 11214 | null |
+| ss_vina_quillota | https://www.listaesperasalud.cl/data/data_SERVICIO_DE_SALUD_VINA_DEL_MAR-QUILLOTA.json | JUNIO 2025 | 15648 | 125522 | JUNIO 2024 | 14494 | null |
+| ss_aconcagua | https://www.listaesperasalud.cl/data/data_SERVICIO_DE_SALUD_ACONCAGUA.json | JUNIO 2025 | 7473 | 25280 | JUNIO 2024 | 7842 | null |
+| ss_metro_norte | https://www.listaesperasalud.cl/data/data_SERVICIO_DE_SALUD_METROPOLITANO_NORTE.json | JUNIO 2025 | 15634 | 120191 | JUNIO 2024 | 14745 | null |
+| ss_metro_occidente | https://www.listaesperasalud.cl/data/data_SERVICIO_DE_SALUD_METROPOLITANO_OCCIDENTE.json | JUNIO 2025 | 14883 | 140707 | JUNIO 2024 | 10987 | null |
+| ss_metro_central | https://www.listaesperasalud.cl/data/data_SERVICIO_DE_SALUD_METROPOLITANO_CENTRAL.json | JUNIO 2025 | 13381 | 95881 | JUNIO 2024 | 11968 | null |
+| ss_metro_oriente | https://www.listaesperasalud.cl/data/data_SERVICIO_DE_SALUD_METROPOLITANO_ORIENTE.json | JUNIO 2025 | 15104 | 79787 | JUNIO 2024 | 14280 | null |
+| ss_metro_sur | https://www.listaesperasalud.cl/data/data_SERVICIO_DE_SALUD_METROPOLITANO_SUR.json | JUNIO 2025 | 17216 | 148099 | JUNIO 2024 | 14398 | null |
+| ss_metro_sur_oriente | https://www.listaesperasalud.cl/data/data_SERVICIO_DE_SALUD_METROPOLITANO_SUR_ORIENTE.json | JUNIO 2025 | 22166 | 139933 | JUNIO 2024 | 19059 | null |
+| ss_ohiggins | https://www.listaesperasalud.cl/data/data_SERVICIO_DE_SALUD_O’HIGGINS.json | JUNIO 2025 | 27526 | 105164 | JUNIO 2024 | 29198 | null |
+| ss_maule | https://www.listaesperasalud.cl/data/data_SERVICIO_DE_SALUD_DEL_MAULE.json | JUNIO 2025 | 23931 | 131977 | JUNIO 2024 | 24077 | null |
+| ss_nuble | https://www.listaesperasalud.cl/data/data_SERVICIO_DE_SALUD_NUBLE.json | JUNIO 2025 | 14133 | 74949 | JUNIO 2024 | 11098 | null |
+| ss_biobio | https://www.listaesperasalud.cl/data/data_SERVICIO_DE_SALUD_BIOBIO.json | JUNIO 2025 | 19618 | 69065 | JUNIO 2024 | 14941 | null |
+| ss_talcahuano | https://www.listaesperasalud.cl/data/data_SERVICIO_DE_SALUD_TALCAHUANO.json | JUNIO 2025 | 8195 | 51408 | JUNIO 2024 | 7141 | null |
+| ss_arauco | https://www.listaesperasalud.cl/data/data_SERVICIO_DE_SALUD_ARAUCO.json | JUNIO 2025 | 3788 | 31326 | JUNIO 2024 | 3633 | null |
+| ss_araucania_norte | https://www.listaesperasalud.cl/data/data_SERVICIO_DE_SALUD_ARAUCANIA_NORTE.json | JUNIO 2025 | 3638 | 43466 | JUNIO 2024 | 3555 | null |
+| ss_araucania_sur | https://www.listaesperasalud.cl/data/data_SERVICIO_DE_SALUD_ARAUCANIA_SUR.json | JUNIO 2025 | 24879 | 171848 | JUNIO 2024 | 19131 | null |
+| ss_valdivia | https://www.listaesperasalud.cl/data/data_SERVICIO_DE_SALUD_LOS_RIOS.json | JUNIO 2025 | 7110 | 58997 | JUNIO 2024 | 6646 | null |
+| ss_osorno | https://www.listaesperasalud.cl/data/data_SERVICIO_DE_SALUD_OSORNO.json | JUNIO 2025 | 8764 | 32330 | JUNIO 2024 | 7105 | null |
+| ss_reloncavi | https://www.listaesperasalud.cl/data/data_SERVICIO_DE_SALUD_DEL_RELONCAVI.json | JUNIO 2025 | 16238 | 80072 | JUNIO 2024 | 15843 | null |
+| ss_chiloe | https://www.listaesperasalud.cl/data/data_SERVICIO_DE_SALUD_CHILOE.json | JUNIO 2025 | 4829 | 27480 | JUNIO 2024 | 4947 | null |
+| ss_aysen | https://www.listaesperasalud.cl/data/data_SERVICIO_DE_SALUD_AYSEN.json | JUNIO 2025 | 1577 | 15396 | JUNIO 2024 | 1508 | null |
+| ss_magallanes | https://www.listaesperasalud.cl/data/data_SERVICIO_DE_SALUD_MAGALLANES.json | JUNIO 2025 | 3168 | 26129 | JUNIO 2024 | 2949 | null |
+
+Campos MINSAL en `null` por motivo:
+
+- `variacion_consulta_pct` para los 28 servicios: la fuente oficial entrega `consulta_pacientes = null` en JUNIO 2024 (el trimestre comparativo). No se calcula variación si falta el dato base.
+- `establecimientos.*.espera_*` y demás métricas a nivel hospital: la fuente oficial NO publica desagregado por establecimiento, solo por Servicio de Salud (que es la unidad correcta por regla #2). El mapeo hospital→servicio se mantiene en `establecimientos` solo para la búsqueda por nombre.
 
 ## Fragmentos de Fuente
 
@@ -123,9 +181,39 @@ Partida;Capítulo;Subtítulo;Moneda;Denominación;Presupuesto Inicial;Presupuest
 16;45;21;P;GASTOS EN PERSONAL;191004539;210975336;210792064
 ```
 
+Fragmento 4, fila cruda del JSON oficial para `ss_metro_norte` (corte JUNIO 2025), tal como la sirve `listaesperasalud.cl`:
+
+```json
+{
+  "servicio": "METROPOLITANO_NORTE",
+  "trimestre": "JUNIO 2025",
+  "ges_registros": 8446,
+  "consulta_registros": 145975,
+  "quirurgica_registros": 17331,
+  "ges_pacientes": null,
+  "consulta_pacientes": 120191,
+  "quirurgica_pacientes": 15634,
+  "ges_promedio": null,
+  "consulta_promedio": 621,
+  "quirurgica_promedio": 422
+}
+```
+
+Fragmento 5, fila cruda comparativa JUNIO 2024 para `ss_metro_norte` (muestra por qué `variacion_consulta_pct` queda en `null`):
+
+```json
+{
+  "servicio": "METROPOLITANO_NORTE",
+  "trimestre": "JUNIO 2024",
+  "consulta_pacientes": null,
+  "quirurgica_pacientes": 14745
+}
+```
+
 ## Notas de Integridad
 
 - No se inventaron valores para campos sin fuente oficial parseada.
-- No se interpolaron ni estimaron listas de espera MINSAL.
+- Las cifras MINSAL son agregadas a nivel **Servicio de Salud**, no a nivel hospital — lo cual es la unidad correcta según regla #2 de CLAUDE.md y según la propia fuente oficial. La UI rotula explícitamente "Lista de espera de toda la red", para que el usuario no confunda la cifra con una métrica del hospital individual.
+- Variaciones interanuales: si la fuente oficial entrega `null` en el trimestre comparativo (caso `consulta_pacientes` en JUNIO 2024), la variación queda en `null`. No se interpoló con vecinos ni se estimó.
 - Se mantuvieron las claves existentes de servicios y establecimientos.
-- `ss_valdivia` conserva su clave histórica del proyecto, pero el XML DIPRES oficial usado corresponde a `SERVICIO DE SALUD LOS RÍOS`.
+- `ss_valdivia` conserva su clave histórica del proyecto, pero el XML DIPRES oficial y el JSON MINSAL usados corresponden a `SERVICIO DE SALUD LOS RÍOS`.
